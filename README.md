@@ -44,3 +44,34 @@
 ## 3. 前端初始化
 
 > https://pro.ant.design/zh-CN/docs/getting-started
+
+### 3.1 前端瘦身
+
+1. **移除国际化**
+    webstorm进入项目文件夹根路径找到`package.json`文件，执行`i18n-remove`命令；
+    删除`/src`目录下的`locales`文件夹；
+    删除webstorm全局搜索与`SelectLang`相关的代码
+
+2. **移除swagger**
+    删除`/src/services`目录下的`swagger`文件夹；
+
+3. **移除oneapi.json**
+    删除`/src/services`目录下的`swagger`文件夹；
+    删除`/config/config.ts`里的如下代码
+
+    ```json
+    openAPI: [
+        {
+            requestLibPath: "import { request } from '@umijs/max'",
+            // 或者使用在线的版本
+            // schemaPath: "https://gw.alipayobjects.com/os/antfincdn/M%24jrzTTYJN/oneapi.json"
+            schemaPath: join(__dirname, 'oneapi.json'),
+            mock: false,
+        },
+        {
+            requestLibPath: "import { request } from '@umijs/max'",
+            schemaPath: 'https://gw.alipayobjects.com/os/antfincdn/CA1dOm%2631B/openapi.json',
+            projectName: 'swagger',
+        },
+    ],
+    ```
