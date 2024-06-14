@@ -20,7 +20,7 @@ public class SampleTest {
     public void testSelect() {
         System.out.println(("----- selectAll method test ------"));
         List<User> userList = userMapper.selectList(null);
-        Assert.isTrue(5 == userList.size(), "");
+        Assert.isTrue(0 == userList.size(), "");
         userList.forEach(System.out::println);
     }
 

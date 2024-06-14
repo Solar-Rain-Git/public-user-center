@@ -254,3 +254,65 @@ public class MyBatisConfig {
 <!--        </dependency>-->
 ```
 
+## 5. 数据库设计
+
+> 什么是数据库？存数据的
+>
+> 数据库里有什么？数据表（理解为 excel 表格）
+>
+> java 操作数据库？程序代替人工
+
+### 5.1 什么是设计数据库表？
+
+有哪些表（模型）？表中有哪些字段？字段的类型？数据库字段添加索引？表与表之间的关联？
+
+举例：性别是否需要加索引（可以理解为文章目录）？
+
+### 用户表设计
+
+id（主键）bigint
+
+username 昵称  varchar
+
+userAccount 登录账号
+
+avatarUrl 头像 varchar
+
+gender 性别 tinyint
+
+userPassword 密码  varchar
+
+phone 电话 varchar
+
+email 邮箱 varchar
+
+userStatus 用户状态 int  0 - 正常
+
+createTime 创建时间（数据插入时间）datetime
+
+updateTime 更新时间（数据更新时间）datetime
+
+isDelete 是否删除 0 1（逻辑删除）tinyint
+
+userRole 用户角色 0 - 普通用户 1 - 管理员
+
+```sql
+DROP TABLE IF EXISTS `user`;
+CREATE TABLE `user`
+(
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+    username     VARCHAR(255)                       NULL COMMENT '昵称',
+    userAccount  VARCHAR(255)                       NULL COMMENT '登录账号',
+    avatarUrl    VARCHAR(1024)                      NULL COMMENT '头像URL',
+    gender       TINYINT                            NULL COMMENT '性别 (0: 未知, 1: 男, 2: 女)',
+    userPassword VARCHAR(512)                       NOT NULL COMMENT '密码',
+    phone        VARCHAR(128)                       NULL COMMENT '电话',
+    email        VARCHAR(512)                       NULL COMMENT '邮箱',
+    userStatus   INT      DEFAULT 0                 NOT NULL COMMENT '用户状态 (0: 正常, 1: 禁用)',
+    createTime   DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    updateTime   DATETIME DEFAULT CURRENT_TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    isDelete     TINYINT  DEFAULT 0                 NOT NULL COMMENT '是否删除 (0: 否, 1: 是)',
+    userRole     TINYINT  DEFAULT 0                 NOT NULL COMMENT '用户角色 (0: 普通用户, 1: 管理员)'
+) COMMENT '用户信息表';
+```
+
