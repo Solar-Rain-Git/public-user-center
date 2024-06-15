@@ -9,5 +9,12 @@ import com.solar.userbackend.Entity.User;
  * @createDate 2024-06-14 12:39:09
  */
 public interface UserService extends IService<User> {
-
+    /**
+     * 用户注册
+     * @param userAccount 账户
+     * @param userPassword 密码
+     * @param checkPassword 检验密码
+     * @return
+     */
+    long userRegister(String userAccount, String userPassword, String checkPassword);
 }
