@@ -1,118 +1,86 @@
 package com.solar.userbackend.Entity;
 
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+import java.io.Serializable;
+import java.util.Date;
 
+/**
+ * @TableName user
+ */
+@TableName(value = "user")
 @Data
-public class User {
+public class User implements Serializable {
+    /**
+     * 主键ID
+     */
+    @TableId(type = IdType.AUTO)
     private Long id;
+
+    /**
+     * 昵称
+     */
     private String username;
+
+    /**
+     * 登录账号
+     */
     private String userAccount;
+
+    /**
+     * 头像URL
+     */
     private String avatarUrl;
-    private Byte gender;
+
+    /**
+     * 性别 (0: 未知, 1: 男, 2: 女)
+     */
+    private Integer gender;
+
+    /**
+     * 密码
+     */
     private String userPassword;
+
+    /**
+     * 电话
+     */
     private String phone;
+
+    /**
+     * 邮箱
+     */
     private String email;
+
+    /**
+     * 用户状态 (0: 正常, 1: 禁用)
+     */
     private Integer userStatus;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
-    private Byte isDelete;
-    private Byte userRole;
 
-    public String getUsername() {
-        return username;
-    }
+    /**
+     * 创建时间
+     */
+    private Date createTime;
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    /**
+     * 更新时间
+     */
+    private Date updateTime;
 
-    public String getUserAccount() {
-        return userAccount;
-    }
+    /**
+     * 是否删除 (0: 否, 1: 是)
+     */
+    private Integer isDelete;
 
-    public void setUserAccount(String userAccount) {
-        this.userAccount = userAccount;
-    }
+    /**
+     * 用户角色 (0: 普通用户, 1: 管理员)
+     */
+    private Integer userRole;
 
-    public String getAvatarUrl() {
-        return avatarUrl;
-    }
-
-    public void setAvatarUrl(String avatarUrl) {
-        this.avatarUrl = avatarUrl;
-    }
-
-    public Byte getGender() {
-        return gender;
-    }
-
-    public void setGender(Byte gender) {
-        this.gender = gender;
-    }
-
-    public String getUserPassword() {
-        return userPassword;
-    }
-
-    public void setUserPassword(String userPassword) {
-        this.userPassword = userPassword;
-    }
-
-    public String getPhone() {
-        return phone;
-    }
-
-    public void setPhone(String phone) {
-        this.phone = phone;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public Integer getUserStatus() {
-        return userStatus;
-    }
-
-    public void setUserStatus(Integer userStatus) {
-        this.userStatus = userStatus;
-    }
-
-    public LocalDateTime getCreateTime() {
-        return createTime;
-    }
-
-    public void setCreateTime(LocalDateTime createTime) {
-        this.createTime = createTime;
-    }
-
-    public LocalDateTime getUpdateTime() {
-        return updateTime;
-    }
-
-    public void setUpdateTime(LocalDateTime updateTime) {
-        this.updateTime = updateTime;
-    }
-
-    public Byte getIsDelete() {
-        return isDelete;
-    }
-
-    public void setIsDelete(Byte isDelete) {
-        this.isDelete = isDelete;
-    }
-
-    public Byte getUserRole() {
-        return userRole;
-    }
-
-    public void setUserRole(Byte userRole) {
-        this.userRole = userRole;
-    }
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
 }

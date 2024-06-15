@@ -316,3 +316,20 @@ CREATE TABLE `user`
 ) COMMENT '用户信息表';
 ```
 
+## 6. MyBatisX自动生成器的使用
+
+MyBatisX 插件，自动根据数据库生成：
+
+- domain：实体对象
+- mapper：操作数据库的对象
+- mapper.xml：定义了 mapper 对象和数据库的关联，可以在里面自己写 SQL
+- service：包含常用的增删改查
+- serviceImpl：具体实现 service
+
+从而提高开发效率！
+
+![image-20240615155229178](C:/Users/%E8%8C%95%E8%8C%95/AppData/Roaming/Typora/typora-user-images/image-20240615155229178.png)
+
+编写一个单元测试来检验是否成功
+
+![image-20240615155542775](C:/Users/%E8%8C%95%E8%8C%95/AppData/Roaming/Typora/typora-user-images/image-20240615155542775.png)
