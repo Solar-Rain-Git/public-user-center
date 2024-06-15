@@ -61,7 +61,7 @@
     删除`/src/services`目录下的`swagger`文件夹；
     删除`/config/config.ts`里的如下代码
 
-    ```json
+    ```
     openAPI: [
         {
             requestLibPath: "import { request } from '@umijs/max'",
@@ -118,8 +118,8 @@
 
 **示例**：
 
-```
-java复制代码import lombok.Data;
+```java
+import lombok.Data;
 
 @Data
 public class User {
@@ -140,8 +140,8 @@ public class User {
 
 **示例**：
 
-```
-java复制代码import org.springframework.boot.context.properties.ConfigurationProperties;
+```java
+import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -246,7 +246,7 @@ public class MyBatisConfig {
 
 将pom.yml文件里的以下代码注释掉，因为我们接入了MyBatis-Plus，会与已经存在的MyBatis起版本冲突
 
-```xml
+```
 <!--        <dependency>-->
 <!--            <groupId>org.mybatis.spring.boot</groupId>-->
 <!--            <artifactId>mybatis-spring-boot-starter</artifactId>-->
@@ -345,3 +345,45 @@ MyBatisX 插件，自动根据数据库生成：
 > 3 对密码进行加密（密码千万不要直接以明文存储到数据库中）
 >
 > 4 向数据库插入用户数据
+
+## 8. 后端 | 登录逻辑设计
+
+### 8. 1 接口设计 
+
+接受参数：用户账户、密码
+
+请求类型：POST
+
+请求体：JSON 格式的数据
+
+请求参数很长时不建议用 get
+
+返回值：用户信息（ 脱敏 ）
+
+### 8. 2 登录逻辑 
+
+1 校验用户账户和密码是否合法 （a非空、b账户长度不小于 4 位、c密码就不小于 8 位、d账户不包含特殊字符）
+
+2 校验密码是否输入正确，要和数据库中的密文密码去对比 
+
+3 用户信息脱敏，隐藏敏感信息，防止数据库中的字段泄露 
+
+4 我们要记录用户的登录态（session），将其存到服务器上（用后端 SpringBoot 框架封装的服务器 tomcat 去记录） cookie 
+
+5 返回脱敏后的用户信息 
+
+### 8. 3 如何知道是哪个用户登录了？ 
+
+> javaweb 这一块的知识
+
+1 连接服务器端后，得到一个 session 状态（匿名会话），返回给前端 
+
+2 登录成功后，得到了登录成功的 session，并且给该session设置一些值（比如用户信息），返回给前端一个设置 cookie 的 ”命令“ session => cookie 
+
+3 前端接收到后端的命令后，设置 cookie，保存到浏览器内 
+
+4 前端再次请求后端的时候（相同的域名），在请求头中带上cookie去请求 
+
+5 后端拿到前端传来的 cookie，找到对应的 session 
+
+6 后端从 session 中可以取出基于该 session 存储的变量（用户的登录信息、登录名） 

@@ -3,6 +3,8 @@ package com.solar.userbackend.Service;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.solar.userbackend.Entity.User;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * @author Solar_Rain
  * @description 针对表【user】的数据库操作Service
@@ -14,7 +16,14 @@ public interface UserService extends IService<User> {
      * @param userAccount 账户
      * @param userPassword 密码
      * @param checkPassword 检验密码
-     * @return
+     * @return 用户ID
      */
     long userRegister(String userAccount, String userPassword, String checkPassword);
+
+    /**
+     * @param userAccount 账户
+     * @param userPassword 密码
+     * @return 用户脱敏信息
+     */
+    User doLogin(String userAccount, String userPassword, HttpServletRequest request);
 }

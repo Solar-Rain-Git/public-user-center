@@ -1,9 +1,6 @@
 package com.solar.userbackend.Entity;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -72,8 +69,9 @@ public class User implements Serializable {
     private Date updateTime;
 
     /**
-     * 是否删除 (0: 否, 1: 是)
+     * 是否逻辑删除(0: 否, 1: 是)
      */
+    @TableLogic
     private Integer isDelete;
 
     /**
