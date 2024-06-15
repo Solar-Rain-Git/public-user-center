@@ -387,3 +387,14 @@ MyBatisX 插件，自动根据数据库生成：
 5 后端拿到前端传来的 cookie，找到对应的 session 
 
 6 后端从 session 中可以取出基于该 session 存储的变量（用户的登录信息、登录名） 
+
+### 8. 4 控制器注解
+
+@RestController 适用于编写 restful 风格的 api，返回值默认为 json 类型
+
+校验写在哪里？
+
+●controller 层倾向于对请求参数本身的校验，不涉及业务逻辑本身（越少越好）
+
+●service 层是对业务逻辑的校验（有可能被 controller 之外的类调用）
+
