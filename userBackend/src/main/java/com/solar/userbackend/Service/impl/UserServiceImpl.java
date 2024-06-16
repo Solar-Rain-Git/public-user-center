@@ -1,7 +1,5 @@
 package com.solar.userbackend.Service.impl;
 
-import java.util.Date;
-
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.solar.userbackend.Entity.User;
@@ -16,6 +14,8 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static com.solar.userbackend.Constant.UserConstant.USER_LOGIN_STATE;
 
 /**
  * @author Solar_Rain
@@ -34,11 +34,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
      * 盐值混淆密码
      */
     private static final String SALT = "solar";
-
-    /**
-     * 用户登录态键
-     */
-    private static final String USER_LOGIN_STATE = "userLoginState";
 
     /**
      * 用户名过滤特殊字符
@@ -117,20 +112,26 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             return null;
         }
         // 5.用户脱敏
-        User safetyUser = new User();
-        safetyUser.setId(user.getId());
-        safetyUser.setUsername(user.getUsername());
-        safetyUser.setUserAccount(user.getUserAccount());
-        safetyUser.setAvatarUrl(user.getAvatarUrl());
-        safetyUser.setGender(user.getGender());
-        safetyUser.setPhone(user.getPhone());
-        safetyUser.setEmail(user.getEmail());
-        safetyUser.setUserStatus(user.getUserStatus());
-        safetyUser.setCreateTime(user.getCreateTime());
-        safetyUser.setIsDelete(user.getIsDelete());
-        safetyUser.setUserRole(user.getUserRole());
+        User safetyUser = getSafetyUser(user);
         // 6.用户的登录态
         request.getSession().setAttribute(USER_LOGIN_STATE, safetyUser);
+        return safetyUser;
+    }
+
+    @Override
+    public User getSafetyUser(User originUser) {
+        User safetyUser = new User();
+        safetyUser.setId(originUser.getId());
+        safetyUser.setUsername(originUser.getUsername());
+        safetyUser.setUserAccount(originUser.getUserAccount());
+        safetyUser.setAvatarUrl(originUser.getAvatarUrl());
+        safetyUser.setGender(originUser.getGender());
+        safetyUser.setPhone(originUser.getPhone());
+        safetyUser.setEmail(originUser.getEmail());
+        safetyUser.setUserStatus(originUser.getUserStatus());
+        safetyUser.setCreateTime(originUser.getCreateTime());
+        safetyUser.setIsDelete(originUser.getIsDelete());
+        safetyUser.setUserRole(originUser.getUserRole());
         return safetyUser;
     }
 }
