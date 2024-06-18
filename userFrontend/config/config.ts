@@ -2,6 +2,7 @@
 import { defineConfig } from '@umijs/max';
 import { join } from 'path';
 import defaultSettings from './defaultSettings';
+import { SYSTEM_LOGO } from './constant';
 import proxy from './proxy';
 import routes from './routes';
 const { REACT_APP_ENV = 'dev' } = process.env;
@@ -78,6 +79,7 @@ export default defineConfig({
     locale: true,
     ...defaultSettings,
   },
+  favicons: [SYSTEM_LOGO],
   /**
    * @name moment2dayjs 插件
    * @description 将项目中的 moment 替换为 dayjs
