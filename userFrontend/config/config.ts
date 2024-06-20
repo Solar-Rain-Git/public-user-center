@@ -74,7 +74,7 @@ export default defineConfig({
    * @name layout 插件
    * @doc https://umijs.org/docs/max/layout-menu
    */
-  title: 'Ant Design Pro',
+  title: 'Solar-Rain 用户中心',
   layout: {
     locale: true,
     ...defaultSettings,

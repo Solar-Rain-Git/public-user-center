@@ -1,49 +1,35 @@
 import { Footer } from '@/components';
-import { login } from '@/services/ant-design-pro/api';
+import { register } from '@/services/ant-design-pro/api';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
-import { LoginForm, ProFormCheckbox, ProFormText } from '@ant-design/pro-components';
-import { Helmet, history, useModel } from '@umijs/max';
+import { LoginForm, ProFormText } from '@ant-design/pro-components';
+import { Helmet, history } from '@umijs/max';
 import { Tabs, message } from 'antd';
 import React, { useState } from 'react';
-import { flushSync } from 'react-dom';
-import { BLOG_LINK, SYSTEM_LOGO } from '../../../../config/constant';
+import { SYSTEM_LOGO } from '../../../../config/constant';
 import Settings from '../../../../config/defaultSettings';
 
-const Login: React.FC = () => {
-  const [setUserLoginState] = useState<API.LoginResult>({});
-  const [type, setType] = useState<string>('account');
-  const { initialState, setInitialState } = useModel('@@initialState');
-  const fetchUserInfo = async () => {
-    const userInfo = await initialState?.fetchUserInfo?.();
-    if (userInfo) {
-      flushSync(() => {
-        setInitialState((s) => ({
-          ...s,
-          currentUser: userInfo,
-        }));
-      });
+const Register: React.FC = () => {
+  const [type] = useState<string>('account');
+  const handleSubmit = async (values: API.RegisterParams) => {
+    const { userPassword, checkPassword } = values;
+    if (checkPassword !== userPassword) {
+      message.error('请确认输入密码一致');
+      return;
     }
-  };
-  const handleSubmit = async (values: API.LoginParams) => {
     try {
-      // 登录
-      const user = await login({
-        ...values,
-        type,
-      });
-      if (user) {
-        const defaultLoginSuccessMessage = '登录成功！';
+      // 注册
+      const id = await register({ ...values });
+      if (id >= 0) {
+        const defaultLoginSuccessMessage = '注册成功！';
         message.success(defaultLoginSuccessMessage);
-        await fetchUserInfo();
         const urlParams = new URL(window.location.href).searchParams;
         history.push(urlParams.get('redirect') || '/');
         return;
+      } else {
+        throw new Error(`Register error id: ${id}`);
       }
-      // 如果失败去设置用户错误信息
-      // @ts-ignore
-      setUserLoginState(user);
     } catch (error) {
-      const defaultLoginFailureMessage = '登录失败，请重试！';
+      const defaultLoginFailureMessage = '注册失败，请重试！';
       console.log(error);
       message.error(defaultLoginFailureMessage);
     }
@@ -62,7 +48,7 @@ const Login: React.FC = () => {
     >
       <Helmet>
         <title>
-          {'登录'}- {Settings.title}
+          {'注册'}- {Settings.title}
         </title>
       </Helmet>
       <div
@@ -76,6 +62,9 @@ const Login: React.FC = () => {
             minWidth: 280,
             maxWidth: '75vw',
           }}
+          submitter={{
+            searchConfig: { submitText: '注册' },
+          }}
           logo={<img alt="logo" src={SYSTEM_LOGO} />}
           title="Solar-Rain 用户中心"
           subTitle={'Solar-Rain 用户中心 是全区最具影响力的 用户中心 设计规范'}
@@ -83,20 +72,20 @@ const Login: React.FC = () => {
             autoLogin: true,
           }}
           onFinish={async (values) => {
-            await handleSubmit(values as API.LoginParams);
+            await handleSubmit(values as API.RegisterParams);
           }}
         >
           <Tabs
             activeKey={type}
-            onChange={setType}
             centered
             items={[
               {
                 key: 'account',
-                label: '账户密码登录',
+                label: '账户密码注册',
               },
             ]}
           />
+
           {type === 'account' && (
             <>
               <ProFormText
@@ -132,29 +121,31 @@ const Login: React.FC = () => {
                   },
                 ]}
               />
+              <ProFormText.Password
+                name="checkPassword"
+                fieldProps={{
+                  size: 'large',
+                  prefix: <LockOutlined />,
+                }}
+                placeholder={'请确认密码'}
+                rules={[
+                  {
+                    required: true,
+                    message: '确认密码是必填项！',
+                  },
+                  {
+                    min: 8,
+                    type: 'string',
+                    message: '密码不得小于8位！',
+                  },
+                ]}
+              />
             </>
           )}
-          <div
-            style={{
-              marginBottom: 24,
-              display: 'flex',
-              justifyContent: 'space-between',
-            }}
-          >
-            <ProFormCheckbox noStyle name="autoLogin">
-              自动登录
-            </ProFormCheckbox>
-            <a href="/user/register" rel="noreferrer">
-              注册
-            </a>
-            <a href={BLOG_LINK} target="_blank" rel="noreferrer">
-              忘记密码请联系站长
-            </a>
-          </div>
         </LoginForm>
       </div>
       <Footer />
     </div>
   );
 };
-export default Login;
+export default Register;
