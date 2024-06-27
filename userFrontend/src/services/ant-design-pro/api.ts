@@ -42,6 +42,42 @@ export async function register(body: API.RegisterParams, options?: { [p: string]
   });
 }
 
+/** 查询用户信息接口 POST /user/search */
+export async function searchUsers(body: API.CurrentUser, options?: { [p: string]: any }) {
+  return request<API.CurrentUser>('/api/user/search', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 删除接口 POST /user/delete */
+export async function deleteById(body: number, options?: { [p: string]: any }) {
+  return request<Boolean>('/api/user/delete', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 更新接口 POST /user/delete */
+export async function updateUser(body: API.CurrentUser, options?: { [p: string]: any }) {
+  return request<Boolean>('/api/user/update', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: body,
+    ...(options || {}),
+  });
+}
+
 /** 此处后端没有提供注释 GET /api/notices */
 export async function getNotices(options?: { [key: string]: any }) {
   return request<API.NoticeIconList>('/api/notices', {

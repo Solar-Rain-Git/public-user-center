@@ -12,6 +12,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import static com.solar.userbackend.Constant.UserConstant.ADMIN_ROLE;
@@ -68,17 +69,61 @@ public class UserController {
         return userService.getSafetyUser(user);
     }
 
-    @GetMapping("/search")
-    public List<User> searchUsers(String userName, HttpServletRequest request) {
+    @PostMapping("/update")
+    public boolean updateUser(@RequestBody User user) {
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userAccount", user.getUserAccount())
+                .or()
+                .eq("phone", user.getPhone());
+
+        List<User> userList = userService.list(queryWrapper);
+        for (User value : userList) {
+            if (Objects.equals(value.getUserAccount(), user.getUserAccount()) && !Objects.equals(value.getId(), user.getId())) {
+                return false;
+            }
+            if (Objects.equals(value.getPhone(), user.getPhone()) && !Objects.equals(value.getId(), user.getId())) {
+                return false;
+            }
+        }
+        return userService.updateById(user);
+    }
+
+    @PostMapping("/search")
+    public List<User> searchUsers(@RequestBody User user, HttpServletRequest request) {
         if (!isAdmin(request)) {
             return new ArrayList<>();
         }
+        String username = user.getUsername();
+        String userAccount = user.getUserAccount();
+        Integer gender = user.getGender();
+        String phone = user.getPhone();
+        String email = user.getEmail();
+        Integer userStatus = user.getUserStatus();
+        Integer userRole = user.getUserRole();
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        if (StringUtils.isNotBlank(userName)) {
-            queryWrapper.like("userName", userName);
+        if (StringUtils.isNotBlank(username)) {
+            queryWrapper.like("userName", username);
+        }
+        if (StringUtils.isNotBlank(userAccount)) {
+            queryWrapper.like("userAccount", userAccount);
+        }
+        if (gender != null) {
+            queryWrapper.eq("gender", gender);
+        }
+        if (StringUtils.isNotBlank(phone)) {
+            queryWrapper.like("phone", phone);
+        }
+        if (StringUtils.isNotBlank(email)) {
+            queryWrapper.like("email", email);
+        }
+        if (userStatus != null) {
+            queryWrapper.eq("userStatus", userStatus);
+        }
+        if (userRole != null) {
+            queryWrapper.eq("userRole", userRole);
         }
         List<User> userList = userService.list(queryWrapper);
-        return userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
+        return userList.stream().map(users -> userService.getSafetyUser(users)).collect(Collectors.toList());
     }
 
     @PostMapping("/delete")
@@ -89,6 +134,13 @@ public class UserController {
         if (userId <= 0) {
             return false;
         }
+
+        // 禁止删除管理员
+        User user = userService.getById(userId);
+        if (user.getUserRole() == ADMIN_ROLE) {
+            return false;
+        }
+
         return userService.removeById(userId);
     }
 

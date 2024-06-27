@@ -1,5 +1,5 @@
 import { Footer } from '@/components';
-import { login } from '@/services/ant-design-pro/api';
+import { currentUser, login } from '@/services/ant-design-pro/api';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { LoginForm, ProFormCheckbox, ProFormText } from '@ant-design/pro-components';
 import { Helmet, history, useModel } from '@umijs/max';
@@ -13,6 +13,15 @@ const Login: React.FC = () => {
   const [setUserLoginState] = useState<API.LoginResult>({});
   const [type, setType] = useState<string>('account');
   const { initialState, setInitialState } = useModel('@@initialState');
+  (async () => {
+    const currentUserInfo = await initialState?.fetchUserInfo?.();
+    if (typeof currentUserInfo === 'object') {
+      message.success('已登录，无需重复登录');
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1500);
+    }
+  })();
   const fetchUserInfo = async () => {
     const userInfo = await initialState?.fetchUserInfo?.();
     if (userInfo) {

@@ -7,18 +7,30 @@ export default [
       { name: '注册', path: '/user/register', component: './User/Register' }
     ],
   },
-  { path: '/welcome', name: '欢迎', icon: 'smile', component: './Welcome' },
+  {
+    path: '/welcome',
+    name: '欢迎',
+    access: 'canNormalStatusUser',
+    icon: 'smile',
+    component: './Welcome',
+  },
+  {
+    path: '/center',
+    icon: 'user',
+    name: '个人中心',
+    access: 'canNormalStatusUser',
+    component: './User/Center',
+  },
   {
     path: '/admin',
     name: '管理页',
     icon: 'crown',
     access: 'canAdmin',
     routes: [
-      { path: '/admin', redirect: '/admin/sub-page' },
-      { path: '/admin/sub-page', name: '二级管理页', component: './Admin' },
+      { path: '/admin', redirect: '/admin/list' },
+      { name: '用户管理', icon: 'table', path: '/admin/list', component: './Admin/userManage' },
     ],
   },
-  { name: '查询表格', icon: 'table', path: '/list', component: './TableList' },
-  { path: '/', redirect: '/welcome' },
+  { path: '/', access: 'canNormalStatusUser', redirect: '/welcome' },
   { path: '*', layout: false, component: './404' },
 ];

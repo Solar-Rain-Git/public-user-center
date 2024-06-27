@@ -2,7 +2,7 @@ import { Footer } from '@/components';
 import { register } from '@/services/ant-design-pro/api';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { LoginForm, ProFormText } from '@ant-design/pro-components';
-import { Helmet, history } from '@umijs/max';
+import { Helmet, history, useModel } from '@umijs/max';
 import { Tabs, message } from 'antd';
 import React, { useState } from 'react';
 import { SYSTEM_LOGO } from '../../../../config/constant';
@@ -10,6 +10,17 @@ import Settings from '../../../../config/defaultSettings';
 
 const Register: React.FC = () => {
   const [type] = useState<string>('account');
+  const { initialState } = useModel('@@initialState');
+  (async () => {
+    const currentUserInfo = await initialState?.fetchUserInfo?.();
+    console.log(currentUserInfo);
+    if (typeof currentUserInfo === 'object') {
+      message.success('已登录，无需注册');
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1500);
+    }
+  })();
   const handleSubmit = async (values: API.RegisterParams) => {
     const { userPassword, checkPassword } = values;
     if (checkPassword !== userPassword) {

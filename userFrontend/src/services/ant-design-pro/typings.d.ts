@@ -3,17 +3,17 @@
 
 declare namespace API {
   type CurrentUser = {
-    id?:number;
-    username?:string;
-    userAccount?:string;
-    avatarUrl?:string;
-    gender?:number;
-    phone?:string;
-    email?:string;
-    userStatus?:number;
-    createTime?:Date;
-    updateTime?:Date;
-    userRole?:number;
+    id?: number;
+    username?: string;
+    userAccount?: string;
+    avatarUrl?: string;
+    gender?: number;
+    phone?: string;
+    email?: string;
+    userStatus?: number;
+    createTime?: Date;
+    updateTime?: Date;
+    userRole?: number;
   };
 
   type LoginResult = {
@@ -98,5 +98,22 @@ declare namespace API {
     datetime?: string;
     description?: string;
     type?: NoticeIconItemType;
+  };
+
+  type EditUserProps = {
+    userValue?: {
+      id?: number;
+      username?: string;
+      userAccount?: string;
+      avatarUrl?: string;
+      gender?: number;
+      phone?: string;
+      email?: string;
+      userStatus?: number;
+      createTime?: Date;
+      updateTime?: Date;
+      userRole?: number;
+    }; // 根据实际情况修改类型
+    onClose: () => void;
   };
 }
