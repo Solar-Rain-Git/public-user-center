@@ -12,8 +12,10 @@ import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.solar.userbackend.Constant.UserConstant.USER_LOGIN_STATE;
 
@@ -116,6 +118,52 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         // 6.用户的登录态
         request.getSession().setAttribute(USER_LOGIN_STATE, safetyUser);
         return safetyUser;
+    }
+
+    @Override
+    public List<User> searchUsers(User user) {
+        String username = user.getUsername();
+        String userAccount = user.getUserAccount();
+        Integer gender = user.getGender();
+        String phone = user.getPhone();
+        String email = user.getEmail();
+        Integer userStatus = user.getUserStatus();
+        Integer userRole = user.getUserRole();
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        if (StringUtils.isNotBlank(username)) {
+            queryWrapper.like("userName", username);
+        }
+        if (StringUtils.isNotBlank(userAccount)) {
+            queryWrapper.like("userAccount", userAccount);
+        }
+        if (gender != null) {
+            queryWrapper.eq("gender", gender);
+        }
+        if (StringUtils.isNotBlank(phone)) {
+            queryWrapper.like("phone", phone);
+        }
+        if (StringUtils.isNotBlank(email)) {
+            queryWrapper.like("email", email);
+        }
+        if (userStatus != null) {
+            queryWrapper.eq("userStatus", userStatus);
+        }
+        if (userRole != null) {
+            queryWrapper.eq("userRole", userRole);
+        }
+        List<User> userList = userMapper.selectList(queryWrapper);
+        return userList.stream().map(this::getSafetyUser).collect(Collectors.toList());
+    }
+
+    /**
+     * 移除登录态
+     *
+     * @param request
+     */
+    @Override
+    public int outLogin(HttpServletRequest request) {
+        request.getSession().removeAttribute(USER_LOGIN_STATE);
+        return 1;
     }
 
     @Override

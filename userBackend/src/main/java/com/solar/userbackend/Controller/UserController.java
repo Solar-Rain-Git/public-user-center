@@ -13,7 +13,6 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 import static com.solar.userbackend.Constant.UserConstant.ADMIN_ROLE;
 import static com.solar.userbackend.Constant.UserConstant.USER_LOGIN_STATE;
@@ -56,6 +55,14 @@ public class UserController {
         return userService.userLogin(userAccount, userPassword, request);
     }
 
+    @PostMapping("/outLogin")
+    public Integer outLogin(HttpServletRequest request) { // 使用封装对象来接受请求参数
+        if (request == null) {
+            return null;
+        }
+        return userService.outLogin(request);
+    }
+
     @GetMapping("/current")
     public User getCurrentUser(HttpServletRequest request) {
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
@@ -93,37 +100,7 @@ public class UserController {
         if (!isAdmin(request)) {
             return new ArrayList<>();
         }
-        String username = user.getUsername();
-        String userAccount = user.getUserAccount();
-        Integer gender = user.getGender();
-        String phone = user.getPhone();
-        String email = user.getEmail();
-        Integer userStatus = user.getUserStatus();
-        Integer userRole = user.getUserRole();
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        if (StringUtils.isNotBlank(username)) {
-            queryWrapper.like("userName", username);
-        }
-        if (StringUtils.isNotBlank(userAccount)) {
-            queryWrapper.like("userAccount", userAccount);
-        }
-        if (gender != null) {
-            queryWrapper.eq("gender", gender);
-        }
-        if (StringUtils.isNotBlank(phone)) {
-            queryWrapper.like("phone", phone);
-        }
-        if (StringUtils.isNotBlank(email)) {
-            queryWrapper.like("email", email);
-        }
-        if (userStatus != null) {
-            queryWrapper.eq("userStatus", userStatus);
-        }
-        if (userRole != null) {
-            queryWrapper.eq("userRole", userRole);
-        }
-        List<User> userList = userService.list(queryWrapper);
-        return userList.stream().map(users -> userService.getSafetyUser(users)).collect(Collectors.toList());
+        return userService.searchUsers(user);
     }
 
     @PostMapping("/delete")

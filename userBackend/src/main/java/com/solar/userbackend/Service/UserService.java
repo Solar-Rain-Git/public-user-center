@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.extension.service.IService;
 import com.solar.userbackend.Entity.User;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 
 /**
  * @author Solar_Rain
@@ -13,15 +14,16 @@ import javax.servlet.http.HttpServletRequest;
 public interface UserService extends IService<User> {
     /**
      * 用户注册
-     * @param userAccount 账户
-     * @param userPassword 密码
+     *
+     * @param userAccount   账户
+     * @param userPassword  密码
      * @param checkPassword 检验密码
      * @return 用户ID
      */
     long userRegister(String userAccount, String userPassword, String checkPassword);
 
     /**
-     * @param userAccount 账户
+     * @param userAccount  账户
      * @param userPassword 密码
      * @return 用户脱敏信息
      */
@@ -29,8 +31,23 @@ public interface UserService extends IService<User> {
 
     /**
      * 用户脱敏
+     *
      * @param originUser
      * @return
      */
     User getSafetyUser(User originUser);
+
+    /**
+     * 用户动态查询
+     *
+     * @param user
+     * @return
+     */
+    List<User> searchUsers(User user);
+
+    /**
+     * @param request
+     * @return
+     */
+    int outLogin(HttpServletRequest request);
 }
