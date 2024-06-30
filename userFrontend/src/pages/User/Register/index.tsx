@@ -10,17 +10,6 @@ import Settings from '../../../../config/defaultSettings';
 
 const Register: React.FC = () => {
   const [type] = useState<string>('account');
-  const { initialState } = useModel('@@initialState');
-  (async () => {
-    const currentUserInfo = await initialState?.fetchUserInfo?.();
-    console.log(currentUserInfo);
-    if (typeof currentUserInfo === 'object') {
-      message.success('已登录，无需注册');
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 1500);
-    }
-  })();
   const handleSubmit = async (values: API.RegisterParams) => {
     const { userPassword, checkPassword } = values;
     if (checkPassword !== userPassword) {
@@ -30,6 +19,7 @@ const Register: React.FC = () => {
     try {
       // 注册
       const id = await register({ ...values });
+      // @ts-ignore
       if (id >= 0) {
         const defaultLoginSuccessMessage = '注册成功！';
         message.success(defaultLoginSuccessMessage);

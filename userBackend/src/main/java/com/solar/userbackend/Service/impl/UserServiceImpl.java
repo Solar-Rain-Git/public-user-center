@@ -2,7 +2,9 @@ package com.solar.userbackend.Service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.solar.userbackend.Common.ErrorCode;
 import com.solar.userbackend.Entity.User;
+import com.solar.userbackend.Exception.BusinessException;
 import com.solar.userbackend.Mapper.UserMapper;
 import com.solar.userbackend.Service.UserService;
 import lombok.extern.slf4j.Slf4j;
@@ -46,30 +48,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
         // 1.检验（使用apache common utils依赖里的方法StringUtils）
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
-            // todo 修改为自定义异常
-            return -1;
+            throw new BusinessException(ErrorCode.params_error, "请求参数不完整");
         }
         if (userAccount.length() < 4) {
-            return -1;
+            throw new BusinessException(ErrorCode.params_error, "用户账户过短");
         }
         if (userPassword.length() < 8 || checkPassword.length() < 8) {
-            return -1;
+            throw new BusinessException(ErrorCode.params_error, "用户密码过短");
         }
         // 2.账户不包含特殊字符
         Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
         if (matcher.find()) {
-            return -1;
+            throw new BusinessException(ErrorCode.params_error, "账户不能包含特殊字符");
         }
         // 3.密码和校验密码相同
         if (!userPassword.equals(checkPassword)) {
-            return -1;
+            throw new BusinessException(ErrorCode.params_error, "密码和校验密码不匹配");
         }
         // 5.账户不能重复
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userAccount", userAccount);
         long count = userMapper.selectCount(queryWrapper);
         if (count > 0) {
-            return -1;
+            throw new BusinessException(ErrorCode.params_error, "不能创建已经存在账户");
         }
         // 6.密码加密
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
@@ -79,7 +80,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         user.setUserPassword(encryptPassword);
         boolean saveResult = this.save(user);
         if (!saveResult) {
-            return -1;
+            throw new BusinessException(ErrorCode.params_error, "用户注册失败");
         }
 
         return user.getId();
@@ -89,18 +90,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
         // 1.检验（使用apache common utils依赖里的方法StringUtils）
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            return null;
+            throw new BusinessException(ErrorCode.params_error, "请求参数不完整");
         }
         if (userAccount.length() < 4) {
-            return null;
+            throw new BusinessException(ErrorCode.params_error, "用户账户过短");
         }
         if (userPassword.length() < 8) {
-            return null;
+            throw new BusinessException(ErrorCode.params_error, "用户密码过短");
         }
         // 2.账户不包含特殊字符
         Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
         if (matcher.find()) {
-            return null;
+            throw new BusinessException(ErrorCode.params_error, "账户不能包含特殊字符");
         }
         // 3.密码加密
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
@@ -111,7 +112,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         User user = userMapper.selectOne(queryWrapper);
         if (user == null) {
             log.info("User login failed, userAccount cannot match userPassword");
-            return null;
+            throw new BusinessException(ErrorCode.null_error, "当前用户不存在");
         }
         // 5.用户脱敏
         User safetyUser = getSafetyUser(user);

@@ -1,5 +1,5 @@
 import { Footer } from '@/components';
-import { currentUser, login } from '@/services/ant-design-pro/api';
+import { login } from '@/services/ant-design-pro/api';
 import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { LoginForm, ProFormCheckbox, ProFormText } from '@ant-design/pro-components';
 import { Helmet, history, useModel } from '@umijs/max';
@@ -10,22 +10,13 @@ import { BLOG_LINK, SYSTEM_LOGO } from '../../../../config/constant';
 import Settings from '../../../../config/defaultSettings';
 
 const Login: React.FC = () => {
-  const [setUserLoginState] = useState<API.LoginResult>({});
   const [type, setType] = useState<string>('account');
   const { initialState, setInitialState } = useModel('@@initialState');
-  (async () => {
-    const currentUserInfo = await initialState?.fetchUserInfo?.();
-    if (typeof currentUserInfo === 'object') {
-      message.success('已登录，无需重复登录');
-      setTimeout(() => {
-        window.location.href = '/';
-      }, 1500);
-    }
-  })();
   const fetchUserInfo = async () => {
     const userInfo = await initialState?.fetchUserInfo?.();
     if (userInfo) {
       flushSync(() => {
+        // @ts-ignore
         setInitialState((s) => ({
           ...s,
           currentUser: userInfo,
@@ -48,9 +39,6 @@ const Login: React.FC = () => {
         history.push(urlParams.get('redirect') || '/');
         return;
       }
-      // 如果失败去设置用户错误信息
-      // @ts-ignore
-      setUserLoginState(user);
     } catch (error) {
       const defaultLoginFailureMessage = '登录失败，请重试！';
       console.log(error);

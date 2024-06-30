@@ -241,7 +241,7 @@ export default () => {
               option: { fixed: 'right', disable: true },
             },
             onChange(value) {
-              console.log('value: ', value);
+              // console.log('value: ', value);
             },
           }}
           rowKey="id"

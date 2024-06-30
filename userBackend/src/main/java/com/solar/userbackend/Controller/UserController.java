@@ -1,16 +1,19 @@
 package com.solar.userbackend.Controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.solar.userbackend.Common.BaseResponse;
+import com.solar.userbackend.Common.ErrorCode;
+import com.solar.userbackend.Common.ResultUtils;
 import com.solar.userbackend.Entity.Request.UserLoginRequest;
 import com.solar.userbackend.Entity.Request.UserRegisterRequest;
 import com.solar.userbackend.Entity.User;
+import com.solar.userbackend.Exception.BusinessException;
 import com.solar.userbackend.Service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,55 +32,59 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/register")
-    public Long userRegister(@RequestBody UserRegisterRequest userRegisterRequest) { // 使用封装对象来接受请求参数
+    public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) { // 使用封装对象来接受请求参数
         if (userRegisterRequest == null) {
-            return null;
+            throw new BusinessException(ErrorCode.params_error, "请求参数为空");
         }
         String userAccount = userRegisterRequest.getUserAccount();
         String userPassword = userRegisterRequest.getUserPassword();
         String checkPassword = userRegisterRequest.getCheckPassword();
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
-            return null;
+            throw new BusinessException(ErrorCode.params_error, "请求参数不完整");
         }
-        return userService.userRegister(userAccount, userPassword, checkPassword);
+        long result = userService.userRegister(userAccount, userPassword, checkPassword);
+        return ResultUtils.success(result);
     }
 
     @PostMapping("/login")
-    public User userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) { // 使用封装对象来接受请求参数
+    public BaseResponse<User> userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) { // 使用封装对象来接受请求参数
         if (userLoginRequest == null) {
-            return null;
+            throw new BusinessException(ErrorCode.params_error, "请求参数为空");
         }
         String userAccount = userLoginRequest.getUserAccount();
         String userPassword = userLoginRequest.getUserPassword();
         if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-            return null;
+            throw new BusinessException(ErrorCode.params_error, "请求参数不完整");
         }
-        return userService.userLogin(userAccount, userPassword, request);
+        User user = userService.userLogin(userAccount, userPassword, request);
+        return ResultUtils.success(user);
     }
 
-    @PostMapping("/outLogin")
-    public Integer outLogin(HttpServletRequest request) { // 使用封装对象来接受请求参数
+    @PostMapping("/logout")
+    public BaseResponse<Integer> outLogin(HttpServletRequest request) { // 使用封装对象来接受请求参数
         if (request == null) {
-            return null;
+            throw new BusinessException(ErrorCode.params_error, "注销信息不存在");
         }
-        return userService.outLogin(request);
+        int result = userService.outLogin(request);
+        return ResultUtils.success(result);
     }
 
     @GetMapping("/current")
-    public User getCurrentUser(HttpServletRequest request) {
+    public BaseResponse<User> getCurrentUser(HttpServletRequest request) {
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
         User currentUser = (User) userObj;
         if (currentUser == null) {
-            return null;
+            throw new BusinessException(ErrorCode.not_login, "当前用户未登录");
         }
         long userId = currentUser.getId();
         // todo 校验用户状态与合法
         User user = userService.getById(userId);
-        return userService.getSafetyUser(user);
+        User safeUser = userService.getSafetyUser(user);
+        return ResultUtils.success(safeUser);
     }
 
     @PostMapping("/update")
-    public boolean updateUser(@RequestBody User user) {
+    public BaseResponse<Boolean> updateUser(@RequestBody User user) {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userAccount", user.getUserAccount())
                 .or()
@@ -86,39 +93,42 @@ public class UserController {
         List<User> userList = userService.list(queryWrapper);
         for (User value : userList) {
             if (Objects.equals(value.getUserAccount(), user.getUserAccount()) && !Objects.equals(value.getId(), user.getId())) {
-                return false;
+                throw new BusinessException(ErrorCode.params_error, "请求参数错误,账户已存在");
             }
             if (Objects.equals(value.getPhone(), user.getPhone()) && !Objects.equals(value.getId(), user.getId())) {
-                return false;
+                throw new BusinessException(ErrorCode.params_error, "请求参数错误,号码已存在");
             }
         }
-        return userService.updateById(user);
+        boolean result = userService.updateById(user);
+        return ResultUtils.success(result);
     }
 
     @PostMapping("/search")
-    public List<User> searchUsers(@RequestBody User user, HttpServletRequest request) {
+    public BaseResponse<List<User>> searchUsers(@RequestBody User user, HttpServletRequest request) {
         if (!isAdmin(request)) {
-            return new ArrayList<>();
+            throw new BusinessException(ErrorCode.no_auth, "没有权限");
         }
-        return userService.searchUsers(user);
+        List<User> userList = userService.searchUsers(user);
+        return ResultUtils.success(userList);
     }
 
     @PostMapping("/delete")
-    public boolean deleteUser(@RequestBody long userId, HttpServletRequest request) {
+    public BaseResponse<Boolean> deleteUser(@RequestBody long userId, HttpServletRequest request) {
         if (!isAdmin(request)) {
-            return false;
+            throw new BusinessException(ErrorCode.no_auth, "没有权限");
         }
         if (userId <= 0) {
-            return false;
+            throw new BusinessException(ErrorCode.null_error, "请求参数错误,账户不存在");
         }
 
         // 禁止删除管理员
         User user = userService.getById(userId);
         if (user.getUserRole() == ADMIN_ROLE) {
-            return false;
+            throw new BusinessException(ErrorCode.no_auth, "没有权限删除管理员");
         }
 
-        return userService.removeById(userId);
+        boolean result = userService.removeById(userId);
+        return ResultUtils.success(result);
     }
 
     /**

@@ -16,6 +16,13 @@ declare namespace API {
     userRole?: number;
   };
 
+  type BaseResponse<T> = {
+    code: number;
+    data: T;
+    message: string;
+    description: string;
+  }
+
   type LoginResult = {
     status?: string;
     type?: string;

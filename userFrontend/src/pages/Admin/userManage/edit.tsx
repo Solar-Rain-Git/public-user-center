@@ -95,7 +95,6 @@ const EditUser: React.FC<API.EditUserProps> = ({ userValue, onClose }) => {
           }
           return;
         }
-        message.error('修改失败');
       },
       onCancel() {
         console.log('Cancel');
@@ -199,30 +198,32 @@ const EditUser: React.FC<API.EditUserProps> = ({ userValue, onClose }) => {
       >
         <Input disabled={notCurrentAdminOrOrdinaryUser} allowClear />
       </Form.Item>
-      <Form.Item label="头像" valuePropName="fileList" name="avatarUrl">
-        <ImgCrop rotationSlider>
-          <Upload
-            listType="picture-card"
-            fileList={fileList}
-            onPreview={handlePreview}
-            onChange={handleChange}
-            maxCount={1}
-            disabled={notCurrentAdminOrOrdinaryUser}
-          >
-            {uploadButton}
-          </Upload>
-        </ImgCrop>
-        {previewImage && (
-          <Image
-            wrapperStyle={{ display: 'none' }}
-            preview={{
-              visible: previewOpen,
-              onVisibleChange: (visible) => setPreviewOpen(visible),
-              afterOpenChange: (visible) => !visible && setPreviewImage(''),
-            }}
-            src={previewImage}
-          />
-        )}
+      <Form.Item label="头像" name="avatarUrl">
+        <div>
+          <ImgCrop rotationSlider>
+            <Upload
+              listType="picture-card"
+              fileList={fileList}
+              onPreview={handlePreview}
+              onChange={handleChange}
+              maxCount={1}
+              disabled={notCurrentAdminOrOrdinaryUser}
+            >
+              {uploadButton}
+            </Upload>
+          </ImgCrop>
+          {previewImage && (
+            <Image
+              wrapperStyle={{display: 'none'}}
+              preview={{
+                visible: previewOpen,
+                onVisibleChange: (visible) => setPreviewOpen(visible),
+                afterOpenChange: (visible) => !visible && setPreviewImage(''),
+              }}
+              src={previewImage}
+            />
+          )}
+        </div>
       </Form.Item>
       <Form.Item
         label="性别"

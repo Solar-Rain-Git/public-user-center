@@ -12,7 +12,7 @@ export async function currentUser(options?: { [key: string]: any }) {
 
 /** 退出登录接口 POST /api/user/outLogin */
 export async function outLogin(options?: { [key: string]: any }) {
-  return request<Record<string, any>>('/api/user/outLogin', {
+  return request<API.BaseResponse<Number>>('/api/user/logout', {
     method: 'POST',
     ...(options || {}),
   });
@@ -20,7 +20,7 @@ export async function outLogin(options?: { [key: string]: any }) {
 
 /** 登录接口 POST /user/login */
 export async function login(body: API.LoginParams, options?: { [key: string]: any }) {
-  return request<API.LoginResult>('/api/user/login', {
+  return request<API.BaseResponse<API.CurrentUser>>('/api/user/login', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -32,7 +32,7 @@ export async function login(body: API.LoginParams, options?: { [key: string]: an
 
 /** 注册接口 POST /user/register */
 export async function register(body: API.RegisterParams, options?: { [p: string]: any }) {
-  return request<API.RegisterResult>('/api/user/register', {
+  return request<API.BaseResponse<API.RegisterResult>>('/api/user/register', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -44,7 +44,7 @@ export async function register(body: API.RegisterParams, options?: { [p: string]
 
 /** 查询用户信息接口 POST /user/search */
 export async function searchUsers(body: API.CurrentUser, options?: { [p: string]: any }) {
-  return request<API.CurrentUser>('/api/user/search', {
+  return request<API.BaseResponse<API.CurrentUser>>('/api/user/search', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ export async function searchUsers(body: API.CurrentUser, options?: { [p: string]
 
 /** 删除接口 POST /user/delete */
 export async function deleteById(body: number, options?: { [p: string]: any }) {
-  return request<Boolean>('/api/user/delete', {
+  return request<API.BaseResponse<Boolean>>('/api/user/delete', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -66,75 +66,14 @@ export async function deleteById(body: number, options?: { [p: string]: any }) {
   });
 }
 
-/** 更新接口 POST /user/delete */
+/** 更新接口 POST /user/update */
 export async function updateUser(body: API.CurrentUser, options?: { [p: string]: any }) {
-  return request<Boolean>('/api/user/update', {
+  return request<API.BaseResponse<Boolean>>('/api/user/update', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
     },
     data: body,
     ...(options || {}),
-  });
-}
-
-/** 此处后端没有提供注释 GET /api/notices */
-export async function getNotices(options?: { [key: string]: any }) {
-  return request<API.NoticeIconList>('/api/notices', {
-    method: 'GET',
-    ...(options || {}),
-  });
-}
-
-/** 获取规则列表 GET /api/rule */
-export async function rule(
-  params: {
-    // query
-    /** 当前的页码 */
-    current?: number;
-    /** 页面的容量 */
-    pageSize?: number;
-  },
-  options?: { [key: string]: any },
-) {
-  return request<API.RuleList>('/api/rule', {
-    method: 'GET',
-    params: {
-      ...params,
-    },
-    ...(options || {}),
-  });
-}
-
-/** 更新规则 PUT /api/rule */
-export async function updateRule(options?: { [key: string]: any }) {
-  return request<API.RuleListItem>('/api/rule', {
-    method: 'POST',
-    data:{
-      method: 'update',
-      ...(options || {}),
-    }
-  });
-}
-
-/** 新建规则 POST /api/rule */
-export async function addRule(options?: { [key: string]: any }) {
-  return request<API.RuleListItem>('/api/rule', {
-    method: 'POST',
-    data:{
-      method: 'post',
-      ...(options || {}),
-    }
-  });
-}
-
-/** 删除规则 DELETE /api/rule */
-export async function removeRule(options?: { [key: string]: any }) {
-  return request<Record<string, any>>('/api/rule', {
-    method: 'POST',
-    data:{
-      method: 'delete',
-      ...(options || {}),
-    }
   });
 }
