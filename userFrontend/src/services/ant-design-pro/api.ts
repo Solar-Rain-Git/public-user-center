@@ -77,3 +77,12 @@ export async function updateUser(body: API.CurrentUser, options?: { [p: string]:
     ...(options || {}),
   });
 }
+
+/** 更新接口 POST /user/update */
+export async function uploadAvatar(body: FormData, options?: { [p: string]: any }) {
+  return request<API.BaseResponse<String>>('/api/file/uploadAvatar', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}

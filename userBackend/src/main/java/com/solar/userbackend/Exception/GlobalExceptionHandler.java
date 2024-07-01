@@ -20,6 +20,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(RuntimeException.class)
     public BaseResponse runTimeExceptionHandler(RuntimeException e) {
         log.error("runtimeException", e);
-        return ResultUtils.error(ErrorCode.system_error, e.getMessage(),"运行错误");
+        return ResultUtils.error(ErrorCode.system_error,"系统内部异常");
     }
 }

@@ -16,5 +16,10 @@ public interface UserConstant {
      */
     int DEFAULT_ROLE = 0;
     int ADMIN_ROLE = 1;
+    /**
+     * 用户状态常量(0: 正常, 1: 禁用)
+     */
+    int DEFAULT_STATUS = 0;
+    int BAN_STATUS = 1;
 
 }

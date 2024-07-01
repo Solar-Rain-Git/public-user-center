@@ -1,4 +1,4 @@
-import { currentUser, updateUser } from '@/services/ant-design-pro/api';
+import {currentUser, updateUser, uploadAvatar} from '@/services/ant-design-pro/api';
 import { ExclamationCircleFilled, PlusOutlined } from '@ant-design/icons';
 import { useModel } from '@umijs/max';
 import {
@@ -17,7 +17,6 @@ import {
   UploadProps,
   message,
 } from 'antd';
-import ImgCrop from 'antd-img-crop';
 import dayjs from 'dayjs';
 import React, { useEffect, useState } from 'react';
 import { DEFAULT_AVATAR, USER_ADMIN_USER, USER_ORDINARY_USER } from '../../../../config/constant';
@@ -35,16 +34,6 @@ const EditUser: React.FC<API.EditUserProps> = ({ userValue, onClose }) => {
       url: userValue?.avatarUrl,
     },
   ]);
-  const getAvatarUrl = (fileList: any[], defaultAvatar: string) => {
-    if (fileList.length > 0) {
-      const { url, thumbUrl } = fileList[0];
-      const avatarUrl = url || thumbUrl;
-      if (avatarUrl && avatarUrl !== defaultAvatar) {
-        return avatarUrl;
-      }
-    }
-    return null;
-  };
   useEffect(() => {
     if (userValue) {
       form.setFieldsValue(userValue);
@@ -58,7 +47,6 @@ const EditUser: React.FC<API.EditUserProps> = ({ userValue, onClose }) => {
       ]);
     }
   }, [userValue]);
-
   const onFinish = (values: any) => {
     let userJson = {};
     if (values.userRole === USER_ADMIN_USER) {
@@ -66,7 +54,6 @@ const EditUser: React.FC<API.EditUserProps> = ({ userValue, onClose }) => {
         id: values?.id,
         username: values?.username,
         userAccount: values?.userAccount,
-        avatarUrl: getAvatarUrl(fileList, DEFAULT_AVATAR),
         gender: values?.gender,
         phone: values?.phone,
         email: values?.email,
@@ -82,6 +69,15 @@ const EditUser: React.FC<API.EditUserProps> = ({ userValue, onClose }) => {
       title: `确定修改当前 ${userValue?.userAccount} 用户信息?`,
       icon: <ExclamationCircleFilled />,
       async onOk() {
+        let uploadResult;
+        // @ts-ignore
+        if (initialState?.currentUser.avatarUrl !== values?.avatarUrl && initialState?.currentUser.id === values?.id) {
+          const formData = new FormData();
+          // @ts-ignore
+          formData.append('file', fileList[0].originFileObj); // 获取上传的文件数据
+          uploadResult = await uploadAvatar(formData);
+        }
+        if (uploadResult === null) return;
         const result = await updateUser(userJson);
         if (result) {
           message.success('修改成功');
@@ -200,18 +196,17 @@ const EditUser: React.FC<API.EditUserProps> = ({ userValue, onClose }) => {
       </Form.Item>
       <Form.Item label="头像" name="avatarUrl">
         <div>
-          <ImgCrop rotationSlider>
-            <Upload
-              listType="picture-card"
-              fileList={fileList}
-              onPreview={handlePreview}
-              onChange={handleChange}
-              maxCount={1}
-              disabled={notCurrentAdminOrOrdinaryUser}
-            >
-              {uploadButton}
-            </Upload>
-          </ImgCrop>
+          <Upload
+            listType="picture-card"
+            fileList={fileList}
+            onPreview={handlePreview}
+            onChange={handleChange}
+            maxCount={1}
+            showUploadList={{showRemoveIcon: false}}
+            disabled={notCurrentAdminOrOrdinaryUser}
+          >
+            {uploadButton}
+          </Upload>
           {previewImage && (
             <Image
               wrapperStyle={{display: 'none'}}

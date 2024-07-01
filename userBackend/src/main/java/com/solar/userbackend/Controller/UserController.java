@@ -17,8 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Objects;
 
-import static com.solar.userbackend.Constant.UserConstant.ADMIN_ROLE;
-import static com.solar.userbackend.Constant.UserConstant.USER_LOGIN_STATE;
+import static com.solar.userbackend.Constant.UserConstant.*;
 
 /**
  * 用户接口
@@ -77,14 +76,21 @@ public class UserController {
             throw new BusinessException(ErrorCode.not_login, "当前用户未登录");
         }
         long userId = currentUser.getId();
-        // todo 校验用户状态与合法
+        if (currentUser.getUserStatus().equals(BAN_STATUS)) {
+            throw new BusinessException(ErrorCode.no_auth, "当前用户已禁用");
+        }
         User user = userService.getById(userId);
         User safeUser = userService.getSafetyUser(user);
         return ResultUtils.success(safeUser);
     }
 
     @PostMapping("/update")
-    public BaseResponse<Boolean> updateUser(@RequestBody User user) {
+    public BaseResponse<Boolean> updateUser(@RequestBody User user, HttpServletRequest request) {
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        User currentUser = (User) userObj;
+        if (currentUser == null) {
+            throw new BusinessException(ErrorCode.not_login, "未检测到登录用户");
+        }
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userAccount", user.getUserAccount())
                 .or()
@@ -123,7 +129,7 @@ public class UserController {
 
         // 禁止删除管理员
         User user = userService.getById(userId);
-        if (user.getUserRole() == ADMIN_ROLE) {
+        if (user.getUserRole().equals(ADMIN_ROLE)) {
             throw new BusinessException(ErrorCode.no_auth, "没有权限删除管理员");
         }
 
@@ -141,6 +147,6 @@ public class UserController {
         // 仅管理员
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
         User user = (User) userObj;
-        return user != null && user.getUserRole() == ADMIN_ROLE;
+        return user != null && user.getUserRole().equals(ADMIN_ROLE);
     }
 }

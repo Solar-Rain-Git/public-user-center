@@ -20,7 +20,7 @@ const Register: React.FC = () => {
       // 注册
       const id = await register({ ...values });
       // @ts-ignore
-      if (id >= 0) {
+      if (id > 0) {
         const defaultLoginSuccessMessage = '注册成功！';
         message.success(defaultLoginSuccessMessage);
         const urlParams = new URL(window.location.href).searchParams;
@@ -30,9 +30,7 @@ const Register: React.FC = () => {
         throw new Error(`Register error id: ${id}`);
       }
     } catch (error) {
-      const defaultLoginFailureMessage = '注册失败，请重试！';
       console.log(error);
-      message.error(defaultLoginFailureMessage);
     }
   };
   return (

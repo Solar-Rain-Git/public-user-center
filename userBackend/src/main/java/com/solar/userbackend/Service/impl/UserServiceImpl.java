@@ -19,6 +19,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import static com.solar.userbackend.Constant.UserConstant.BAN_STATUS;
 import static com.solar.userbackend.Constant.UserConstant.USER_LOGIN_STATE;
 
 /**
@@ -113,6 +114,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (user == null) {
             log.info("User login failed, userAccount cannot match userPassword");
             throw new BusinessException(ErrorCode.null_error, "当前用户不存在");
+        }
+        if (user.getUserStatus().equals(BAN_STATUS)) {
+            log.info("User login failed, userAccount cannot match userPassword");
+            throw new BusinessException(ErrorCode.no_auth, "当前用户已禁用");
         }
         // 5.用户脱敏
         User safetyUser = getSafetyUser(user);

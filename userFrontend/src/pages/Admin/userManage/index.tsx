@@ -25,7 +25,6 @@ const deleteUserById = async (userId: number) => {
 export default () => {
   const actionRef = useRef<ActionType>();
   const [open, setOpen] = useState(false);
-  const { initialState, setInitialState } = useModel('@@initialState');
   let [userValue, setUserValue] = useState<Object>({});
   const columns: ProColumns<API.CurrentUser>[] = [
     {
@@ -201,7 +200,6 @@ export default () => {
                 message.success('用户删除成功');
                 return;
               }
-              message.error('用户删除失败');
             }
           }}
         >

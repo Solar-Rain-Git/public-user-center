@@ -1,4 +1,4 @@
-import { currentUser, updateUser } from '@/services/ant-design-pro/api';
+import {currentUser, updateUser, uploadAvatar} from '@/services/ant-design-pro/api';
 import { useModel } from '@@/exports';
 import { ExclamationCircleFilled, PlusOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
@@ -17,7 +17,6 @@ import {
   UploadProps,
   message,
 } from 'antd';
-import ImgCrop from 'antd-img-crop';
 import dayjs from 'dayjs';
 import React, { useState } from 'react';
 import { DEFAULT_AVATAR } from '../../../../config/constant';
@@ -38,23 +37,25 @@ const UserCenter: React.FC = () => {
     },
   ]);
 
-  const getAvatarUrl = (fileList: any[], defaultAvatar: string) => {
-    if (fileList.length > 0) {
-      const { url, thumbUrl } = fileList[0];
-      const avatarUrl = url || thumbUrl;
-      if (avatarUrl && avatarUrl !== defaultAvatar) {
-        return avatarUrl;
-      }
-    }
-    return null;
-  };
-
   const onFinish = (values: any) => {
+    let hasChanges = false;
+    for (const key in values) {
+      // if (Object.prototype.hasOwnProperty.call(values, key)) {
+        // @ts-ignore
+        if (values[key] !== initialState?.currentUser[key]) {
+          hasChanges = true;
+          break;
+        }
+      // }
+    }
+    if (!hasChanges) {
+      message.error("没有更改数据");
+      return;
+    }
     const userJson = {
       id: values?.id,
       username: values?.username,
       userAccount: values?.userAccount,
-      avatarUrl: getAvatarUrl(fileList, DEFAULT_AVATAR),
       gender: values?.gender,
       phone: values?.phone,
       email: values?.email,
@@ -63,6 +64,15 @@ const UserCenter: React.FC = () => {
       title: '确定修改当前用户信息?',
       icon: <ExclamationCircleFilled />,
       async onOk() {
+        let uploadResult;
+        // @ts-ignore
+        if (initialState?.currentUser.avatarUrl !== values?.avatarUrl && initialState?.currentUser.id === values?.id) {
+          const formData = new FormData();
+          // @ts-ignore
+          formData.append('file', fileList[0].originFileObj); // 获取上传的文件数据
+          uploadResult = await uploadAvatar(formData);
+        }
+        if (uploadResult === null) return;
         const result = await updateUser(userJson);
         if (result) {
           message.success('修改成功');
@@ -178,20 +188,20 @@ const UserCenter: React.FC = () => {
         </Form.Item>
         <Form.Item label="头像"  name="avatarUrl">
           <div>
-            <ImgCrop rotationSlider>
-              <Upload
-                listType="picture-card"
-                fileList={fileList}
-                onPreview={handlePreview}
-                onChange={handleChange}
-                maxCount={1}
-              >
-                {uploadButton}
-              </Upload>
-            </ImgCrop>
+            <Upload
+              accept="image/jpeg/png"
+              listType="picture-card"
+              fileList={fileList}
+              onPreview={handlePreview}
+              onChange={handleChange}
+              showUploadList={{showRemoveIcon: false}}
+              maxCount={1}
+            >
+              {uploadButton}
+            </Upload>
             {previewImage && (
               <Image
-                wrapperStyle={{ display: 'none' }}
+                wrapperStyle={{display: 'none'}}
                 preview={{
                   visible: previewOpen,
                   onVisibleChange: (visible) => setPreviewOpen(visible),
