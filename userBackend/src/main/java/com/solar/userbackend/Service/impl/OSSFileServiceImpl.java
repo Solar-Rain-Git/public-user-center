@@ -14,6 +14,7 @@ import com.aliyun.oss.model.PutObjectResult;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.Resource;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -27,7 +28,7 @@ import java.util.UUID;
 @Service
 @Slf4j
 public class OSSFileServiceImpl implements OSSFileService {
-    @Autowired
+    @Resource
     private OSSConfig ossConfig;
     private final static Integer FILE_SIZE = 2;//文件上传限制大小
     private final static String FILE_UNIT = "M";//文件上传限制单位（B,K,M,G）

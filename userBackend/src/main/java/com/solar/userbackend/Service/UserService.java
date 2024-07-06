@@ -1,6 +1,7 @@
 package com.solar.userbackend.Service;
 
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.solar.userbackend.Entity.Request.UserRegisterRequest;
 import com.solar.userbackend.Entity.User;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,12 +16,10 @@ public interface UserService extends IService<User> {
     /**
      * 用户注册
      *
-     * @param userAccount   账户
-     * @param userPassword  密码
-     * @param checkPassword 检验密码
+     * @param userRegisterRequest 注册信息
      * @return 用户ID
      */
-    long userRegister(String userAccount, String userPassword, String checkPassword);
+    Long userRegister(UserRegisterRequest userRegisterRequest, HttpServletRequest request);
 
     /**
      * @param userAccount  账户
@@ -50,4 +49,12 @@ public interface UserService extends IService<User> {
      * @return
      */
     int outLogin(HttpServletRequest request);
+
+    /**
+     * 通过邮箱修改密码
+     *
+     * @param
+     * @return
+     */
+    Boolean updatePassword(UserRegisterRequest userRegisterRequest, HttpServletRequest request);
 }

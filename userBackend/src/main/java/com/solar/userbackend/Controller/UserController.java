@@ -4,16 +4,19 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.solar.userbackend.Common.BaseResponse;
 import com.solar.userbackend.Common.ErrorCode;
 import com.solar.userbackend.Common.ResultUtils;
+import com.solar.userbackend.Entity.Email;
 import com.solar.userbackend.Entity.Request.UserLoginRequest;
 import com.solar.userbackend.Entity.Request.UserRegisterRequest;
 import com.solar.userbackend.Entity.User;
 import com.solar.userbackend.Exception.BusinessException;
+import com.solar.userbackend.Service.EmailService;
 import com.solar.userbackend.Service.UserService;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Objects;
 
@@ -29,19 +32,15 @@ import static com.solar.userbackend.Constant.UserConstant.*;
 public class UserController {
     @Resource
     private UserService userService;
+    @Resource
+    private EmailService emailService;
 
     @PostMapping("/register")
-    public BaseResponse<Long> userRegister(@RequestBody UserRegisterRequest userRegisterRequest) { // 使用封装对象来接受请求参数
+    public BaseResponse<String> userRegister(@RequestBody UserRegisterRequest userRegisterRequest, HttpServletRequest request) { // 使用封装对象来接受请求参数
         if (userRegisterRequest == null) {
             throw new BusinessException(ErrorCode.params_error, "请求参数为空");
         }
-        String userAccount = userRegisterRequest.getUserAccount();
-        String userPassword = userRegisterRequest.getUserPassword();
-        String checkPassword = userRegisterRequest.getCheckPassword();
-        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
-            throw new BusinessException(ErrorCode.params_error, "请求参数不完整");
-        }
-        long result = userService.userRegister(userAccount, userPassword, checkPassword);
+        String result = String.valueOf(userService.userRegister(userRegisterRequest, request));
         return ResultUtils.success(result);
     }
 
@@ -94,7 +93,9 @@ public class UserController {
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         queryWrapper.eq("userAccount", user.getUserAccount())
                 .or()
-                .eq("phone", user.getPhone());
+                .eq("phone", user.getPhone())
+                .or()
+                .eq("email", user.getEmail());
 
         List<User> userList = userService.list(queryWrapper);
         for (User value : userList) {
@@ -104,7 +105,25 @@ public class UserController {
             if (Objects.equals(value.getPhone(), user.getPhone()) && !Objects.equals(value.getId(), user.getId())) {
                 throw new BusinessException(ErrorCode.params_error, "请求参数错误,号码已存在");
             }
+            if (Objects.equals(value.getEmail(), user.getEmail()) && !Objects.equals(value.getId(), user.getId())) {
+                throw new BusinessException(ErrorCode.params_error, "请求参数错误,邮箱已存在");
+            }
         }
+
+        User defaultUser = userService.getById(user.getId());
+
+        if (!defaultUser.getUserRole().equals(ADMIN_ROLE) && !defaultUser.getUserRole().equals(user.getUserRole())) {
+            checkUserWeightToEmail("账户升级通知", "#FFD364", "已升级为⭐管理员", "，请履行好管理员的职责！", user.getEmail());
+        }
+
+        if (!defaultUser.getUserStatus().equals(BAN_STATUS) && !defaultUser.getUserStatus().equals(user.getUserStatus())) {
+            checkUserWeightToEmail("账户禁用通知", "#E10602", "已被禁用", "，了解具体原因请联系官方邮箱！", user.getEmail());
+        }
+
+        if (!defaultUser.getUserStatus().equals(DEFAULT_STATUS) && !defaultUser.getUserStatus().equals(user.getUserStatus())) {
+            checkUserWeightToEmail("账户解禁通知", "#66B86F", "已解禁", "，可继续享用平台服务！", user.getEmail());
+        }
+
         boolean result = userService.updateById(user);
         return ResultUtils.success(result);
     }
@@ -132,8 +151,22 @@ public class UserController {
         if (user.getUserRole().equals(ADMIN_ROLE)) {
             throw new BusinessException(ErrorCode.no_auth, "没有权限删除管理员");
         }
-
+        checkUserWeightToEmail("账户移除通知", "#E10602", "已被系统移除", "，了解具体原因请联系官方邮箱！", user.getEmail());
         boolean result = userService.removeById(userId);
+        return ResultUtils.success(result);
+    }
+
+    @PostMapping("/change_pwd")
+    public BaseResponse<Boolean> updatePassword(@RequestBody UserRegisterRequest userRegisterRequest, HttpServletRequest request) { // 使用封装对象来接受请求参数
+        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+        User currentUser = (User) userObj;
+        if (currentUser != null) {
+            throw new BusinessException(ErrorCode.params_error, "请先退出登录");
+        }
+        if (userRegisterRequest == null) {
+            throw new BusinessException(ErrorCode.params_error, "请求参数为空");
+        }
+        boolean result = userService.updatePassword(userRegisterRequest, request);
         return ResultUtils.success(result);
     }
 
@@ -148,5 +181,25 @@ public class UserController {
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
         User user = (User) userObj;
         return user != null && user.getUserRole().equals(ADMIN_ROLE);
+    }
+
+    /**
+     * 检查用户权重发送对应邮件
+     *
+     * @param theme     邮件主题
+     * @param color     邮件不同主题不同颜色
+     * @param content   邮件主要内容
+     * @param other     邮件其他内容
+     * @param emailInfo 邮件接收方
+     */
+    private void checkUserWeightToEmail(String theme, String color, String content, String other, String emailInfo) {
+        Email email = new Email();
+        email.setSubject(theme);
+        email.setContent(emailService.tag(color, content) + other);
+        email.setEmail(emailInfo);
+        boolean banRes = emailService.banInfoToEmail(email);
+        if (!banRes) {
+            throw new BusinessException(ErrorCode.system_error, theme + "失败！");
+        }
     }
 }

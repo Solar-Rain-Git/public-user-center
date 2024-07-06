@@ -1,5 +1,5 @@
 import {Footer} from '@/components';
-import {register, registerByEmail} from '@/services/ant-design-pro/api';
+import {changePasswordByEmail, register, registerByEmail, resetPwd} from '@/services/ant-design-pro/api';
 import {KeyOutlined, LockOutlined, MailOutlined, UserOutlined} from '@ant-design/icons';
 import {LoginForm, ProForm, ProFormText} from '@ant-design/pro-components';
 import {Helmet, history} from '@umijs/max';
@@ -10,7 +10,7 @@ import Settings from '../../../../config/defaultSettings';
 import {ProFormCaptcha} from "@ant-design/pro-form";
 import {DefaultOptionType} from "rc-select/es/Select";
 
-const Register: React.FC = () => {
+const RestPwd: React.FC = () => {
   const [type] = useState<string>('account');
   const {token} = theme.useToken();
   const [email, setEmail] = useState('');
@@ -30,16 +30,13 @@ const Register: React.FC = () => {
   const handleSubmit = async (values: API.RegisterParams) => {
     try {
       // 注册
-      const id = await register({...values});
-      // @ts-ignore
-      if (id > 0) {
-        const defaultLoginSuccessMessage = '注册成功！';
+      const result = await resetPwd({...values});
+      if (result) {
+        const defaultLoginSuccessMessage = '密码重置成功！';
         message.success(defaultLoginSuccessMessage);
         const urlParams = new URL(window.location.href).searchParams;
         history.push(urlParams.get('redirect') || '/');
         return;
-      } else {
-        throw new Error(`Register error id: ${id}`);
       }
     } catch (error) {
       console.log(error);
@@ -59,7 +56,7 @@ const Register: React.FC = () => {
     >
       <Helmet>
         <title>
-          {'注册'}- {Settings.title}
+          {'忘记密码'}- {Settings.title}
         </title>
       </Helmet>
       <div
@@ -74,7 +71,7 @@ const Register: React.FC = () => {
             maxWidth: '75vw',
           }}
           submitter={{
-            searchConfig: {submitText: '注册'},
+            searchConfig: {submitText: '重置密码'},
           }}
           logo={<img alt="logo" src={SYSTEM_LOGO}/>}
           title="Solar-Rain 用户中心"
@@ -92,31 +89,13 @@ const Register: React.FC = () => {
             items={[
               {
                 key: 'account',
-                label: '账户密码注册',
+                label: '忘记密码',
               },
             ]}
           />
 
           {type === 'account' && (
             <>
-              <ProFormText
-                name="userAccount"
-                fieldProps={{
-                  size: 'large',
-                  prefix: <UserOutlined/>,
-                }}
-                placeholder={'请输入账户名'}
-                rules={[
-                  {
-                    required: true,
-                    message: '账户名是必填项！',
-                  },
-                  {
-                    pattern: /^[^\u4e00-\u9fa5]{4,}$/,
-                    message: '账户名不得包含中文字符且长度至少为四位！',
-                  },
-                ]}
-              />
               <ProForm.Item
                 name="email"
                 rules={[
@@ -172,11 +151,11 @@ const Register: React.FC = () => {
                 ]}
                 onGetCaptcha={async () => {
                   const emailConfig = {
-                    subject: "账户注册验证通知",
-                    content: "正在进行注册，验证码为：",
+                    subject: "账户密码重置通知",
+                    content: "正在密码重置，验证码为：",
                     email: email
                   }
-                  const result = await registerByEmail(emailConfig);
+                  const result = await changePasswordByEmail(emailConfig as API.RegisterResult);
                   if (result) {
                     // @ts-ignore
                     message.success(result);
@@ -282,4 +261,4 @@ const Register: React.FC = () => {
     </div>
   );
 };
-export default Register;
+export default RestPwd;

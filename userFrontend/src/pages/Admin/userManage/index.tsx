@@ -18,7 +18,7 @@ export const waitTime = async (time: number = 100) => {
   await waitTimePromise(time);
 };
 
-const deleteUserById = async (userId: number) => {
+const deleteUserById = async (userId: string) => {
   return await deleteById(userId);
 };
 
@@ -32,12 +32,12 @@ export default () => {
       dataIndex: 'id',
       valueType: 'text',
       search: false,
-      width: 50,
+      width: 200,
       align: 'center',
     },
     {
       title: '昵称',
-      width: 100,
+      width: 150,
       dataIndex: 'username',
       align: 'center',
       render: (_, record) => (
@@ -48,7 +48,7 @@ export default () => {
     },
     {
       title: '账户',
-      width: 100,
+      width: 150,
       dataIndex: 'userAccount',
       align: 'center',
       render: (_, record) => (
@@ -97,7 +97,7 @@ export default () => {
       dataIndex: 'phone',
       align: 'center',
       render: (_, record) => (
-        <Text hidden={!record.phone} copyable={{ tooltips: false }}>
+        <Text ellipsis={true} hidden={!record.phone} copyable={{ tooltips: false }}>
           {record.phone}
         </Text>
       ),
@@ -108,7 +108,7 @@ export default () => {
       width: 200,
       align: 'center',
       render: (_, record) => (
-        <Text hidden={!record.email} copyable={{ tooltips: false }}>
+        <Text ellipsis={true} hidden={!record.email} copyable={{ tooltips: false }}>
           {record.email}
         </Text>
       ),
@@ -222,7 +222,7 @@ export default () => {
           columns={columns}
           actionRef={actionRef}
           cardBordered
-          scroll={{ x: 1500 }}
+          scroll={{ x: 2000 }}
           // @ts-ignore
           request={async (params, sort, filter) => {
             await waitTime(500);

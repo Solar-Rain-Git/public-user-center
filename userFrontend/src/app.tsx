@@ -11,7 +11,8 @@ import { errorConfig } from './requestErrorConfig';
 const isDev = process.env.NODE_ENV === 'development';
 const loginPath = '/user/login';
 const registerPath = '/user/register';
-const WhiteList = [registerPath, loginPath];
+const restPwdPath='/user/forget_pwd'
+const WhiteList = [registerPath, loginPath,restPwdPath];
 
 /**
  * @see  https://umijs.org/zh-CN/plugins/plugin-initial-state

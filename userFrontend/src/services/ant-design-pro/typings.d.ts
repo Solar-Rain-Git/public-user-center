@@ -3,7 +3,7 @@
 
 declare namespace API {
   type CurrentUser = {
-    id?: number;
+    id?: string;
     username?: string;
     userAccount?: string;
     avatarUrl?: string;
@@ -29,7 +29,7 @@ declare namespace API {
     currentAuthority?: string;
   };
 
-  type RegisterResult = number;
+  type RegisterResult = any;
 
   type PageParams = {
     current?: number;
@@ -74,6 +74,8 @@ declare namespace API {
     userAccount?: string;
     userPassword?: string;
     checkPassword?: string;
+    email?: string;
+    veoCode?: string;
   };
 
   type ErrorResponse = {
@@ -122,5 +124,11 @@ declare namespace API {
       userRole?: number;
     }; // 根据实际情况修改类型
     onClose: () => void;
+  };
+
+  type EmailConfig = {
+    subject?: string;
+    content?: string;
+    email?: string;
   };
 }

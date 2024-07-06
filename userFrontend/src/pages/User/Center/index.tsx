@@ -59,23 +59,26 @@ const UserCenter: React.FC = () => {
       gender: values?.gender,
       phone: values?.phone,
       email: values?.email,
+      userStatus: values?.userStatus,
+      userRole: values?.userRole,
     };
     Modal.confirm({
       title: '确定修改当前用户信息?',
       icon: <ExclamationCircleFilled />,
       async onOk() {
-        let uploadResult;
+        let uploadResult= true;
         // @ts-ignore
         if (initialState?.currentUser.avatarUrl !== values?.avatarUrl && initialState?.currentUser.id === values?.id) {
           const formData = new FormData();
           // @ts-ignore
           formData.append('file', fileList[0].originFileObj); // 获取上传的文件数据
+          // @ts-ignore
           uploadResult = await uploadAvatar(formData);
         }
-        if (uploadResult === null) return;
+        if (!uploadResult) return;
         const result = await updateUser(userJson);
         if (result) {
-          message.success('修改成功');
+          message.success('个人信息修改成功');
           const userInfo = await currentUser();
           setInitialState((s) => ({
             ...s,

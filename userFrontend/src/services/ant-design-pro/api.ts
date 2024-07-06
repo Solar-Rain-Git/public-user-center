@@ -55,7 +55,7 @@ export async function searchUsers(body: API.CurrentUser, options?: { [p: string]
 }
 
 /** 删除接口 POST /user/delete */
-export async function deleteById(body: number, options?: { [p: string]: any }) {
+export async function deleteById(body: String, options?: { [p: string]: any }) {
   return request<API.BaseResponse<Boolean>>('/api/user/delete', {
     method: 'POST',
     headers: {
@@ -80,8 +80,38 @@ export async function updateUser(body: API.CurrentUser, options?: { [p: string]:
 
 /** 更新接口 POST /user/update */
 export async function uploadAvatar(body: FormData, options?: { [p: string]: any }) {
-  return request<API.BaseResponse<String>>('/api/file/uploadAvatar', {
+  return request<API.BaseResponse<Boolean>>('/api/file/uploadAvatar', {
     method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 更新接口 POST /user/update */
+export async function registerByEmail(body: API.EmailConfig, options?: { [p: string]: any }) {
+  return request<API.BaseResponse<String>>('/api/email/send_email', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 更新接口 POST /user/update */
+export async function changePasswordByEmail(body: API.EmailConfig, options?: { [p: string]: any }) {
+  return request<API.BaseResponse<String>>('/api/email/update_pwd_email', {
+    method: 'POST',
+    data: body,
+    ...(options || {}),
+  });
+}
+
+/** 注册接口 POST /user/register */
+export async function resetPwd(body: API.RegisterParams, options?: { [p: string]: any }) {
+  return request<API.BaseResponse<API.RegisterResult>>('/api/user/change_pwd', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
     data: body,
     ...(options || {}),
   });

@@ -144,8 +144,8 @@ const Login: React.FC = () => {
             <a href="/user/register" rel="noreferrer">
               注册
             </a>
-            <a href={BLOG_LINK} target="_blank" rel="noreferrer">
-              忘记密码请联系站长
+            <a href="/user/forget_pwd" target="_blank" rel="noreferrer">
+              忘记密码?
             </a>
           </div>
         </LoginForm>

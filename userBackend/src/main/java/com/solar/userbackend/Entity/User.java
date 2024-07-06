@@ -1,6 +1,8 @@
 package com.solar.userbackend.Entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -15,7 +17,8 @@ public class User implements Serializable {
     /**
      * 主键ID
      */
-    @TableId(type = IdType.AUTO)
+//    @TableId(type = IdType.AUTO)
+    @JsonSerialize(using = ToStringSerializer.class)
     private Long id;
 
     /**

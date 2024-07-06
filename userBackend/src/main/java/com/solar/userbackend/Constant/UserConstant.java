@@ -12,6 +12,11 @@ public interface UserConstant {
     String USER_LOGIN_STATE = "userLoginState";
 
     /**
+     * 用户登录态键
+     */
+    String VERCODE = "verCode";
+
+    /**
      * 用户角色常量(0: 普通用户, 1: 管理员)
      */
     int DEFAULT_ROLE = 0;

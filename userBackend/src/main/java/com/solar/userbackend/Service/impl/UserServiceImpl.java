@@ -3,6 +3,7 @@ package com.solar.userbackend.Service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.solar.userbackend.Common.ErrorCode;
+import com.solar.userbackend.Entity.Request.UserRegisterRequest;
 import com.solar.userbackend.Entity.User;
 import com.solar.userbackend.Exception.BusinessException;
 import com.solar.userbackend.Mapper.UserMapper;
@@ -14,13 +15,13 @@ import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static com.solar.userbackend.Constant.UserConstant.BAN_STATUS;
-import static com.solar.userbackend.Constant.UserConstant.USER_LOGIN_STATE;
+import static com.solar.userbackend.Constant.UserConstant.*;
 
 /**
  * @author Solar_Rain
@@ -46,9 +47,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     private static final String validPattern = "[`~!@#$%^&*()+=|{}':;',\\\\[\\\\].<>/?~！@#￥%……&*（）——+|{}【】‘；：”“’。，、？\\s]";
 
     @Override
-    public long userRegister(String userAccount, String userPassword, String checkPassword) {
+    public Long userRegister(UserRegisterRequest userRegisterRequest, HttpServletRequest request) {
         // 1.检验（使用apache common utils依赖里的方法StringUtils）
-        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
+        String userAccount = userRegisterRequest.getUserAccount();
+        String userPassword = userRegisterRequest.getUserPassword();
+        String checkPassword = userRegisterRequest.getCheckPassword();
+        String email = userRegisterRequest.getEmail();
+        String verCode = userRegisterRequest.getVerCode();
+        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, email, verCode)) {
             throw new BusinessException(ErrorCode.params_error, "请求参数不完整");
         }
         if (userAccount.length() < 4) {
@@ -67,11 +73,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
             throw new BusinessException(ErrorCode.params_error, "密码和校验密码不匹配");
         }
         // 5.账户不能重复
-        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("userAccount", userAccount);
-        long count = userMapper.selectCount(queryWrapper);
-        if (count > 0) {
-            throw new BusinessException(ErrorCode.params_error, "不能创建已经存在账户");
+        if (userMapper.selectCount(new QueryWrapper<User>().eq("userAccount", userAccount)) > 0) {
+            throw new BusinessException(ErrorCode.params_error, "该账户已注册");
+        }
+        if (userMapper.selectCount(new QueryWrapper<User>().eq("email", email)) > 0) {
+            throw new BusinessException(ErrorCode.params_error, "该邮箱已注册");
+        }
+        String verCodeInfo = (String) request.getSession().getAttribute(VERCODE);
+        if (verCodeInfo == null) {
+            throw new BusinessException(ErrorCode.params_error, "验证码错误，请稍后尝试");
+        }
+        if (!verCodeInfo.equals(verCode)) {
+            throw new BusinessException(ErrorCode.params_error, "验证码错误，请在有效时长内再次输入");
         }
         // 6.密码加密
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
@@ -79,11 +92,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         User user = new User();
         user.setUserAccount(userAccount);
         user.setUserPassword(encryptPassword);
+        user.setEmail(email);
         boolean saveResult = this.save(user);
         if (!saveResult) {
             throw new BusinessException(ErrorCode.params_error, "用户注册失败");
         }
-
+        request.getSession().removeAttribute(VERCODE);
         return user.getId();
     }
 
@@ -170,6 +184,38 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public int outLogin(HttpServletRequest request) {
         request.getSession().removeAttribute(USER_LOGIN_STATE);
         return 1;
+    }
+
+    @Override
+    public Boolean updatePassword(UserRegisterRequest userRegisterRequest, HttpServletRequest request) {
+        String userPassword = userRegisterRequest.getUserPassword();
+        String checkPassword = userRegisterRequest.getCheckPassword();
+        String email = userRegisterRequest.getEmail();
+        String verCode = userRegisterRequest.getVerCode();
+        if (StringUtils.isAnyBlank(userPassword, checkPassword, email, verCode)) {
+            throw new BusinessException(ErrorCode.params_error, "请求参数不完整");
+        }
+        if (!userPassword.equals(checkPassword)) {
+            throw new BusinessException(ErrorCode.params_error, "密码和校验密码不匹配");
+        }
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("email", email);
+        User user = userMapper.selectOne(queryWrapper);
+        if (user == null) {
+            throw new BusinessException(ErrorCode.null_error, "当前邮箱账户不存在");
+        }
+        String verCodeInfo = (String) request.getSession().getAttribute(VERCODE);
+        if (verCodeInfo == null) {
+            throw new BusinessException(ErrorCode.params_error, "验证码不存在或已过期，请填写完整邮箱发送验证码");
+        }
+        if (!verCodeInfo.equals(verCode)) {
+            throw new BusinessException(ErrorCode.params_error, "验证码错误，请在有效时长内再次输入");
+        }
+        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+        user.setUserPassword(encryptPassword);
+        boolean result = this.updateById(user);
+        request.getSession().removeAttribute(VERCODE);
+        return result;
     }
 
     @Override

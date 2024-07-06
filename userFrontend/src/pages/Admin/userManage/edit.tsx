@@ -57,10 +57,13 @@ const EditUser: React.FC<API.EditUserProps> = ({ userValue, onClose }) => {
         gender: values?.gender,
         phone: values?.phone,
         email: values?.email,
+        userStatus: values?.userStatus,
+        userRole: values?.userRole,
       };
     } else {
       userJson = {
         id: values?.id,
+        email: values?.email,
         userStatus: values?.userStatus,
         userRole: values?.userRole,
       };
@@ -69,18 +72,19 @@ const EditUser: React.FC<API.EditUserProps> = ({ userValue, onClose }) => {
       title: `确定修改当前 ${userValue?.userAccount} 用户信息?`,
       icon: <ExclamationCircleFilled />,
       async onOk() {
-        let uploadResult;
+        let uploadResult = true;
         // @ts-ignore
         if (initialState?.currentUser.avatarUrl !== values?.avatarUrl && initialState?.currentUser.id === values?.id) {
           const formData = new FormData();
           // @ts-ignore
           formData.append('file', fileList[0].originFileObj); // 获取上传的文件数据
+          // @ts-ignore
           uploadResult = await uploadAvatar(formData);
         }
-        if (uploadResult === null) return;
+        if (!uploadResult) return;
         const result = await updateUser(userJson);
         if (result) {
-          message.success('修改成功');
+          message.success('个人信息修改成功');
           onClose();
           const userInfo = await currentUser();
           if (userInfo.id === initialState?.currentUser?.id) {

@@ -15,21 +15,22 @@ import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 import static com.solar.userbackend.Constant.UserConstant.BAN_STATUS;
 import static com.solar.userbackend.Constant.UserConstant.USER_LOGIN_STATE;
 
 /**
- * @author zr 2024/2/29
+ * @author solar_rain
  */
 @Slf4j
 @RestController
 @RequestMapping("/file")
 public class OSSFileController {
-    @Autowired
+    @Resource
     private OSSFileService ossfileService;
-    @Autowired
+    @Resource
     private UserService userService;
 
     /**
@@ -39,7 +40,7 @@ public class OSSFileController {
      * @return
      */
     @PostMapping("/uploadAvatar")
-    public BaseResponse<String> upload(@RequestPart("file") MultipartFile file, HttpServletRequest request) {
+    public BaseResponse<Boolean> upload(@RequestPart("file") MultipartFile file, HttpServletRequest request) {
         Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
         User currentUser = (User) userObj;
         if (currentUser == null) {
@@ -55,8 +56,8 @@ public class OSSFileController {
             throw new BusinessException(ErrorCode.params_error, "上传头像失败");
         }
         user.setAvatarUrl(imgFileStr);
-        userService.updateById(user);
-        return ResultUtils.success(imgFileStr);
+        boolean result = userService.updateById(user);
+        return ResultUtils.success(result);
     }
 }
 
