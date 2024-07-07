@@ -102,7 +102,7 @@ const Login: React.FC = () => {
                   size: 'large',
                   prefix: <UserOutlined />,
                 }}
-                placeholder={'请输入账户名'}
+                placeholder={'请输入账户/邮箱'}
                 rules={[
                   {
                     required: true,

@@ -566,3 +566,92 @@ servlet:
 ### 17.2 前端
 
 新增忘记密码页面、发送邮件接口、修改密码接口、优化用户业务逻辑
+
+## 18. 部署
+
+### 18.1 多环境理论
+
+> 参考文章：https://blog.csdn.net/weixin_41701290/article/details/1201732831
+
+**本地开发**：localhost（127.0.0.1）
+
+**多环境**：指同一套项目代码在**不同的阶段需要**根据实际情况来调整配置并且**部署到不同的机器上**。
+
+**为什么需要**？
+
+1. 每个环境互不影响
+2. 区分不同的阶段：开发 / 测试 / 生产
+3. 对项目进行优化：
+    1. 本地日志级别
+    2. 精简依赖，节省项目体积
+    3. 项目的环境 / 参数可以调整，比如 JVM 参数
+
+针对不同环境做不同的事情。
+
+**多环境分类**：
+
+1. 本地环境（自己的电脑）localhost
+2. 开发环境（远程开发）大家连同一台机器，为了大家开发方便
+3. 测试环境（测试）开发 / 测试 / 产品，单元测试 / 性能测试 / 功能测试 / 系统集成测试，独立的数据库、独立的服务器
+4. 预发布环境（体验服）：和正式环境一致，正式数据库，更严谨，查出更多问题
+5. 正式环境（线上，公开对外访问的项目）：尽量不要改动，保证上线前的代码是 “完美” 运行
+6. 沙箱环境（实验环境）：为了做实验
+
+### 18.2 前端多环境实战
+
+1. 请求地址说明
+
+    开发环境：localhost:8080
+
+    线上地址：user-backend.sunrainzcn.cn
+
+    ```js
+    startFront(env) {
+        if(env === 'prod') {
+            // 不输出注释 
+            // 项目优化
+            // 修改请求地址
+        } else {
+            // 保持本地开发逻辑
+        }
+    }
+    ```
+
+2. 打包问题
+
+    **项目的配置**
+
+    > 不同的项目（框架）都有不同的配置文件，umi 的配置文件是 config，可以在配置文件后添加对应的环境名称后缀来区分开发环境和生产环境。参考文档：https://umijs.org/zh-CN/docs/deployment
+
+    umi4需要在config.ts里手动配置`exportStatic: {}`导出静态化来解决路由404问题
+
+    线上接口`requestErrorConfig.ts`：
+
+    ```js
+    // 请求拦截器
+      requestInterceptors: [
+        (config: RequestOptions) => {
+          // 拦截请求配置，进行个性化处理。
+          let url = process.env.NODE_ENV === 'production' ? "http://user-backend.sunrainzcn.cn" + config?.url : config?.url;
+          // @ts-ignore
+          const timeout = config?.timeout + 10000;
+          return {...config, url, timeout};
+        },
+      ],
+    ```
+
+    **环境配置**
+
+    - 开发环境：config.dev.ts
+    - 生产环境：config.prod.ts
+    - 公共配置：config.ts 不带后缀
+
+    **启动方式**
+
+    - 开发环境：npm run start（本地启动，监听端口、自动更新）
+    - 线上环境：npm run build（项目构建打包），可以使用 serve 工具启动（npm i -g serve）
+
+### 18.3 后端多环境实战
+
+
+
