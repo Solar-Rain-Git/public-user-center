@@ -173,45 +173,52 @@ export default () => {
       valueType: 'option',
       key: 'option',
       align: 'center',
+      width: 120,
       render: (text, record, _, action) => [
-        <Button
-          size="small"
-          key="editable"
-          ghost
-          type="primary"
-          onClick={() => {
-            setUserValue(record);
-            setOpen(true);
-          }}
-        >
-          编辑
-        </Button>,
-        <Popconfirm
-          title="删除用户"
-          description={`确认删除 ${record.userAccount} 用户吗？`}
-          okText="确认"
-          showCancel={false}
-          placement="leftTop"
-          onConfirm={async () => {
-            if (record.id != null) {
-              const result = await deleteUserById(record.id);
-              if (result) {
-                action?.reload();
-                message.success('用户删除成功');
-                return;
-              }
-            }
-          }}
-        >
+        <div style={{
+          width: '100%',
+          display: 'flex',
+          justifyContent: 'space-around'
+        }}>
           <Button
             size="small"
-            danger
-            key="deteletable"
-            disabled={record.userRole === USER_ADMIN_USER}
+            key="editable"
+            ghost
+            type="primary"
+            onClick={() => {
+              setUserValue(record);
+              setOpen(true);
+            }}
           >
-            删除
+            编辑
           </Button>
-        </Popconfirm>,
+          <Popconfirm
+            title="删除用户"
+            description={`确认删除 ${record.userAccount} 用户吗？`}
+            okText="确认"
+            showCancel={false}
+            placement="leftTop"
+            onConfirm={async () => {
+              if (record.id != null) {
+                const result = await deleteUserById(record.id);
+                if (result) {
+                  action?.reload();
+                  message.success('用户删除成功');
+                  return;
+                }
+              }
+            }}
+          >
+            <Button
+              size="small"
+              danger
+              key="deteletable"
+              disabled={record.userRole === USER_ADMIN_USER}
+            >
+              删除
+            </Button>
+          </Popconfirm>
+        </div>
       ],
     },
   ];

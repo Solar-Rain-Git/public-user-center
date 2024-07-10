@@ -28,74 +28,16 @@ interface ResponseStructure {
  * @doc https://umijs.org/docs/max/request#配置
  */
 export const errorConfig: RequestConfig = {
-  // 错误处理： umi@3 的错误处理方案。
-  errorConfig: {
-    // 错误抛出
-    errorThrower: (res) => {
-      const {code, data, message, description} =
-        res as unknown as ResponseStructure;
-      if (code !== 0) {
-        const error: any = new Error(message);
-        error.name = 'BizError';
-        error.info = {code, message, data};
-        throw error; // 抛出自制的错误
-      }
-    },
-    // 错误接收及处理
-    errorHandler: (error: any, opts: any) => {
-      if (opts?.skipErrorHandler) throw error;
-      // 我们的 errorThrower 抛出的错误。
-      if (error.name === 'BizError') {
-        const errorInfo: ResponseStructure | undefined = error.info;
-        if (errorInfo) {
-          const {code, description} = errorInfo;
-          switch (errorInfo.code) {
-            case ErrorCode.success:
-              // do nothing
-              break;
-            case ErrorCode.params_error:
-              message.warning(errorInfo.message);
-              break;
-            case ErrorCode.null_error:
-              message.error(errorInfo.message);
-              break;
-            case ErrorCode.no_auth:
-              notification.open({
-                description: description,
-                message: code + errorInfo.message
-              });
-              break;
-            case ErrorCode.system_error:
-              // TODO: redirect
-              break;
-            default:
-              message.error(errorInfo.message);
-          }
-        }
-      } else if (error.response) {
-        // Axios 的错误
-        // 请求成功发出且服务器也响应了状态码，但状态代码超出了 2xx 的范围
-        message.error(`Response status:${error.response.status}`);
-      } else if (error.request) {
-        // 请求已经成功发起，但没有收到响应
-        // \`error.request\` 在浏览器中是 XMLHttpRequest 的实例，
-        // 而在node.js中是 http.ClientRequest 的实例
-        message.error('None response! Please retry.');
-      } else {
-        // 发送请求时出了点问题
-        message.error('Request error, please retry.');
-      }
-    },
-  },
-
   // 请求拦截器
   requestInterceptors: [
     (config: RequestOptions) => {
       // 拦截请求配置，进行个性化处理。
-      const url = config?.url;
+      let url = process.env.NODE_ENV === 'production' ? "http://192.168.6.129:8080" + config?.url : config?.url;
+      // 设置带上 cookie 的选项
+      const withCredentials = true;
       // @ts-ignore
       const timeout = config?.timeout + 10000;
-      return {...config, url, timeout};
+      return {...config, url, timeout, withCredentials};
     },
   ],
 

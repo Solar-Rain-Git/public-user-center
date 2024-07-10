@@ -1,0 +1,8 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: #数据用户名
+    password: #数据库密码
+    url: #数据库链接
+  mail:
+    port: 587

@@ -106,7 +106,7 @@
                 <version>${spring-boot.version}</version>
                 <configuration>
                     <mainClass>com.solar.userbackend.UserBackendApplication</mainClass>
-                    <skip>true</skip>
+<!--                    <skip>true</skip>-->
                 </configuration>
                 <executions>
                     <execution>

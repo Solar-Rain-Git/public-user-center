@@ -567,7 +567,7 @@ servlet:
 
 新增忘记密码页面、发送邮件接口、修改密码接口、优化用户业务逻辑
 
-## 18. 部署
+## 18. 部署打包
 
 ### 18.1 多环境理论
 
@@ -603,7 +603,7 @@ servlet:
 
     开发环境：localhost:8080
 
-    线上地址：user-backend.sunrainzcn.cn
+    线上地址：例-http://192.168.6.129:8080
 
     ```js
     startFront(env) {
@@ -623,35 +623,514 @@ servlet:
 
     > 不同的项目（框架）都有不同的配置文件，umi 的配置文件是 config，可以在配置文件后添加对应的环境名称后缀来区分开发环境和生产环境。参考文档：https://umijs.org/zh-CN/docs/deployment
 
-    umi4需要在config.ts里手动配置`exportStatic: {}`导出静态化来解决路由404问题
+    - umi4需要在config.ts里手动配置`exportStatic: {}`导出静态化来解决路由404问题
+    - 使用nginx部署时要在配置文件添加`history: { type: 'browser' }`，下面有教程
 
     线上接口`requestErrorConfig.ts`：
 
     ```js
     // 请求拦截器
-      requestInterceptors: [
+    requestInterceptors: [
         (config: RequestOptions) => {
-          // 拦截请求配置，进行个性化处理。
-          let url = process.env.NODE_ENV === 'production' ? "http://user-backend.sunrainzcn.cn" + config?.url : config?.url;
-          // @ts-ignore
-          const timeout = config?.timeout + 10000;
-          return {...config, url, timeout};
+            // 拦截请求配置，进行个性化处理。
+            let url = process.env.NODE_ENV === 'production' ? "http://192.168.6.129:8080" + config?.url : config?.url;
+            // 设置带上 cookie 的选项
+            const withCredentials = true;
+            // @ts-ignore
+            const timeout = config?.timeout + 10000;
+            return {...config, url, timeout, withCredentials};
         },
-      ],
+    ],
     ```
 
     **环境配置**
-
+    
     - 开发环境：config.dev.ts
     - 生产环境：config.prod.ts
     - 公共配置：config.ts 不带后缀
 
     **启动方式**
-
+    
     - 开发环境：npm run start（本地启动，监听端口、自动更新）
     - 线上环境：npm run build（项目构建打包），可以使用 serve 工具启动（npm i -g serve）
 
 ### 18.3 后端多环境实战
 
+SpringBoot 项目，通过 application.yml 添加不同的后缀来区分配置文件
+
+可以在启动项目时传入环境变量：
+
+```bash
+java -jar ${name}.jar --spring.profiles.active=prod
+```
+
+主要是改：
+
+- 依赖的环境地址
+- 数据库地址
+- 缓存地址
+- 消息队列地址
+- 项目端口号
+- 服务器配置
+
+1. 新增`application-prod.yml`(springboot的生产环境配置)，`application-prod.yml`是公共配置
+
+    ```properties
+    //主要修改线上生产数据库地址
+    spring:
+      datasource:
+        driver-class-name: com.mysql.cj.jdbc.Driver
+        username: rootuser
+        password: 1712645973Se
+        url: jdbc:mysql://solar-rain-db.rwlb.rds.aliyuncs.com:3306/usercenter
+    ```
+
+2. 修改`pom.xml`
+
+    ```xml
+    //去掉或注释<!--<skip>true</skip>-->，会导致没有清单文件及依赖的jar
+    <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <version>${spring-boot.version}</version>
+        <configuration>
+            <mainClass>com.solar.userbackend.UserBackendApplication</mainClass>
+            <!--                    <skip>true</skip>-->
+        </configuration>
+        <executions>
+            <execution>
+                <id>repackage</id>
+                <goals>
+                    <goal>repackage</goal>
+                </goals>
+            </execution>
+        </executions>
+    </plugin>
+    ```
+
+3. 使用`maven`工具的生命周期指令先`clean`再`package`，得到jar包后执行以下指令就可以运行后端生产环境
+
+    ```java
+    java -jar .\userBackend-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+    ```
+
+## 19. 部署上线
+
+### 19.1 原始部署
+
+> `nginx`+`springboot`+`dist`
+>
+> 这里选用ubuntu20虚拟机来进行部署，以下为原生安装，主要学习练手。网上有一键配置的教程。
+
+1. 安装web服务器`nginx`
+
+    ```sh
+    mkdir services
+    cd /services
+    sudo apt update
+    sudo apt install curl
+    curl -o nginx-1.24.0.tar.gz http://nginx.org/download/nginx-1.24.0.tar.gz
+    tar -zxvf nginx-1.24.0.tar.gz
+    cd nginx-1.24.0
+    sudo apt install build-essential
+    ./configure
+    sudo apt install libpcre3 libpcre3-dev
+    sudo apt install zlib1g zlib1g-dev
+    sudo apt install libssl-dev
+    ./configure --with-openssl
+    make
+    sudo make install
+    ls /usr/local/nginx/sbin/nginx
+    vim /etc/profile
+    export PATH=$PATH:/usr/local/nginx/sbin	#在最后一行添加
+    source /etc/profile
+    nginx
+    sudo apt install net-tools
+    netstat -ntlp #查看启动情况
+    #打开主机ip就可以看到nginx页面
+    ```
+
+    nginx配置文件
+
+    ```sh
+    cd /usr/local/nginx/conf
+    cat nginx.conf 
+    ```
+
+2. 上传前端打包好的`dist`项目在`services`,重命名为`userFrontend`,在`config.ts`配置如下
+
+    ```js
+    history: { type: 'browser' },
+    //exportStatic: {}
+        
+        
+    //解释    
+    // browser: 这种模式使用浏览器的 History API 来管理路由。它允许你使用像 /path/to/resource 这样的标准 URL 路径，而不会像传统的 Web 应用那样刷新页面。这种模式在现代的单页面应用（SPA）中很常见。
+    history: {
+        type: "browser",
+    };
+    //hash: 这种模式通过在 URL 中使用哈希符号 # 来管理路由。例如，/path/to/resource 可以表示为 /#/path/to/resource。这种模式兼容性很好，因为哈希部分不会发送到服务器，仅用于客户端路由。
+    history: {
+        type: "hash",
+    };
+    //memory: 这种模式简单地将路由信息保存在内存中，不会修改浏览器的 URL。这通常用于测试或者在不需要持久化 URL 的情况下使用。
+    history: {
+        type: "memory",
+    };
+    ```
+
+3. 修改`nginx`配置
+
+    ```sh
+    cd /usr/local/nginx/conf
+    vim nginx.conf
+    ```
+
+    ```sh
+    user root;#将nginx.conf的user改为和启动用户一致
+    worker_processes  1;
+    
+    #error_log  logs/error.log;
+    #error_log  logs/error.log  notice;
+    #error_log  logs/error.log  info;
+    
+    #pid        logs/nginx.pid;
+    
+    
+    events {
+        worker_connections  1024;
+    }
+    
+    
+    http {
+        include       mime.types;
+        default_type  application/octet-stream;
+    
+        #log_format  main  '$remote_addr - $remote_user [$time_local] "$request" '
+        #                  '$status $body_bytes_sent "$http_referer" '
+        #                  '"$http_user_agent" "$http_x_forwarded_for"';
+    
+        #access_log  logs/access.log  main;
+    
+        sendfile        on;
+        #tcp_nopush     on;
+    
+        #keepalive_timeout  0;
+        keepalive_timeout  65;
+    
+        #gzip  on;
+    
+        server {
+            listen       80;
+            server_name  localhost;
+    
+            #charset koi8-r;
+    
+            #access_log  logs/host.access.log  main;
+    
+            location / {
+                root   /root/services/userFrontend/;#项目文件
+                index  index.html index.htm;
+                try_files $uri $uri/ /index.html;#单页跳转配置
+            }
+    
+            #error_page  404              /404.html;
+    
+            # redirect server error pages to the static page /50x.html
+            #
+            error_page   500 502 503 504  /50x.html;
+            location = /50x.html {
+                root   html;
+            }
+    
+            # proxy the PHP scripts to Apache listening on 127.0.0.1:80
+            #
+            #location ~ \.php$ {
+            #    proxy_pass   http://127.0.0.1;
+            #}
+    
+            # pass the PHP scripts to FastCGI server listening on 127.0.0.1:9000
+            #
+            #location ~ \.php$ {
+            #    root           html;
+            #    fastcgi_pass   127.0.0.1:9000;
+            #    fastcgi_index  index.php;
+            #    fastcgi_param  SCRIPT_FILENAME  /scripts$fastcgi_script_name;
+            #    include        fastcgi_params;
+            #}
+    
+            # deny access to .htaccess files, if Apache's document root
+            # concurs with nginx's one
+            #
+            #location ~ /\.ht {
+            #    deny  all;
+            #}
+        }
+    
+    
+        # another virtual host using mix of IP-, name-, and port-based configuration
+        #
+        #server {
+        #    listen       8000;
+        #    listen       somename:8080;
+        #    server_name  somename  alias  another.alias;
+    
+        #    location / {
+        #        root   html;
+        #        index  index.html index.htm;
+        #    }
+        #}
+    
+    
+        # HTTPS server
+        #
+        #server {
+        #    listen       443 ssl;
+        #    server_name  localhost;
+    
+        #    ssl_certificate      cert.pem;
+        #    ssl_certificate_key  cert.key;
+    
+        #    ssl_session_cache    shared:SSL:1m;
+        #    ssl_session_timeout  5m;
+    
+        #    ssl_ciphers  HIGH:!aNULL:!MD5;
+        #    ssl_prefer_server_ciphers  on;
+    
+        #    location / {
+        #        root   html;
+        #        index  index.html index.htm;
+        #    }
+        #}
+    
+    }
+    ```
+
+4. 执行以下指令，接着浏览器打开主机ip
+    ```sh
+    nginx -s reload
+    ps -ef|grep 'nginx'
+    netstat -ntlp
+    ```
+
+5. 配置springboot后端
+
+    ```sh
+    #使用 apt 命令安装 OpenJDK 8 及其所有依赖项。
+    sudo apt install -y openjdk-8-jdk
+    #验证 JDK 1.8 是否安装成功
+    java -version
+    #使用 apt 命令安装 Maven。
+    sudo apt install -y maven
+    #安装完成后，验证 Maven 是否安装成功
+    mvn -version
+    ```
+
+    上传后端`jar`包到`/root/services/userBackend/`后添加权限
+
+    ```sh
+    chmod a+x userBackend-0.0.1-SNAPSHOT.jar
+    ```
+
+    然后运行jar包
+
+    ```sh
+    java -jar userBackend-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod
+    #后台运行
+    nohup java -jar userBackend-0.0.1-SNAPSHOT.jar --spring.profiles.active=prod &
+    #查看后台任务
+    jobs
+    #查看所有的java程序
+    jps
+    ```
 
 
+### 19.2 宝塔部署
+
+> 这里不做服务器宝塔安装的过程
+
+![image-20240708164738104](C:/Users/%E8%8C%95%E8%8C%95/AppData/Roaming/Typora/typora-user-images/image-20240708164738104.png)
+
+![image-20240708164958343](C:/Users/%E8%8C%95%E8%8C%95/AppData/Roaming/Typora/typora-user-images/image-20240708164958343.png)
+
+![image-20240708165334541](C:/Users/%E8%8C%95%E8%8C%95/AppData/Roaming/Typora/typora-user-images/image-20240708165334541.png)
+
+![image-20240708165633045](C:/Users/%E8%8C%95%E8%8C%95/AppData/Roaming/Typora/typora-user-images/image-20240708165633045.png)
+
+![image-20240708165735105](C:/Users/%E8%8C%95%E8%8C%95/AppData/Roaming/Typora/typora-user-images/image-20240708165735105.png)
+
+### 19.3 Docker部署
+
+> 这里选用ubuntu20虚拟机来进行部署
+>
+> 安装：https://blog.csdn.net/Tester_muller/article/details/131440306
+
+docker 是容器，可以将项目的环境（比如 java、nginx）和项目的代码一起打包成镜像，所有同学都能下载镜像，更容易分发和移植。
+
+再启动项目时，不需要敲一大堆命令，而是直接下载镜像、启动镜像就可以了。
+
+docker 可以理解为软件安装包。
+
+Docker 安装：https://www.docker.com/get-started/ 或者宝塔安装
+
+Dockerfile 用于指定构建 Docker 镜像的方法
+
+Dockerfile 一般情况下不需要完全从 0 自己写，建议去 github、gitee 等托管平台参考同类项目（比如 springboot）
+
+Dockerfile 编写：
+
+- FROM 依赖的基础镜像
+- WORKDIR 工作目录
+- COPY 从本机复制文件
+- RUN 执行命令
+- CMD / ENTRYPOINT（附加额外参数）指定运行容器时默认执行的命令
+
+根据 Dockerfile 构建镜像：
+
+```bash
+# 后端
+docker build -t user-center-backend:v0.0.1 .
+
+# 前端
+docker build -t user-center-front:v0.0.1 .
+```
+
+Docker 构建优化：减少尺寸、减少构建时间（比如多阶段构建，可以丢弃之前阶段不需要的内容）
+
+docker run 启动：
+
+```bash
+# 前端
+docker run -p 80:80 -d user-center-front:v0.0.1
+
+# 后端
+docker run -p 8080:8080 -d user-center-backend:v0.0.1
+```
+
+如果后端8080端口没有启动成功，执行以下指令
+
+```sh
+#检查防火墙设置:
+#确保防火墙允许通过端口 8080 的流量。使用以下命令检查是否有关于 8080 端口的规则：
+sudo iptables -L -n
+#如果防火墙配置存在限制，可以尝试添加规则允许流量通过端口 8080，如下所示：
+sudo iptables -A INPUT -p tcp --dport 8080 -j ACCEPT
+sudo iptables-save
+#请确保修改防火墙规则后重试访问。
+```
+
+
+
+虚拟化
+
+1. 端口映射：把本机的资源（实际访问地址）和容器内部的资源（应用启动端口）进行关联
+2. 目录映射：把本机的端口和容器应用的端口进行关联
+
+进入容器：
+
+```bash
+docker exec -i -t  fee2bbb7c9ee /bin/bash
+```
+
+查看进程：
+
+```bash
+docker ps
+```
+
+查看日志：
+
+```bash
+docker logs -f [container-id]
+```
+
+杀死容器：
+
+```bash
+docker kill
+```
+
+强制删除镜像：
+
+```bash
+docker rmi -f
+```
+
+**Docker 平台部署**
+
+1. 云服务商的容器平台（腾讯云、阿里云）
+2. 面向某个领域的容器平台（前端 / 后端微信云托管） **要花钱！**
+
+容器平台的好处：
+
+1. 不用输命令来操作，更方便省事
+2. 不用在控制台操作，更傻瓜式、更简单
+3. 大厂运维，比自己运维更省心
+4. 额外的能力，比如监控、告警、其他（存储、负载均衡、自动扩缩容、流水线）
+
+爽就完事了！！！
+
+## 20. 跨域解决
+
+浏览器为了用户的安全，仅允许向 **同域名、同端口** 的服务器发送请求。
+
+如何解决跨域？
+
+最直接的方式：把域名、端口改成相同的
+
+### 添加跨域头
+
+让服务器告诉浏览器：允许跨域（返回 cross-origin-allow 响应头）
+
+### 1. 网关支持（Nginx）
+
+```nginx
+# 跨域配置
+location ^~ /api/ {
+    proxy_pass http://127.0.0.1:8080/api/;
+    add_header 'Access-Control-Allow-Origin' $http_origin;
+    add_header 'Access-Control-Allow-Credentials' 'true';
+    add_header Access-Control-Allow-Methods 'GET, POST, OPTIONS';
+    add_header Access-Control-Allow-Headers '*';
+    if ($request_method = 'OPTIONS') {
+        add_header 'Access-Control-Allow-Credentials' 'true';
+        add_header 'Access-Control-Allow-Origin' $http_origin;
+        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+        add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range';
+        add_header 'Access-Control-Max-Age' 1728000;
+        add_header 'Content-Type' 'text/plain; charset=utf-8';
+        add_header 'Content-Length' 0;
+        return 204;
+    }
+}
+```
+
+### 2. 修改后端服务
+
+1. 配置 [@CrossOrigin ](https://www.code-nav.cn/CrossOrigin)注解
+2. 添加 web 全局请求拦截器
+
+```java
+@Configuration
+public class WebMvcConfg implements WebMvcConfigurer {
+ 
+    @Override
+    public void addCorsMappings(CorsRegistry registry) {
+        //设置允许跨域的路径
+        registry.addMapping("/**")
+                //设置允许跨域请求的域名
+                //当 **Credentials为true时，** Origin不能为星号，需为具体的ip地址【如果接口不带cookie,ip无需设成具体ip】
+                .allowedOrigins("http://localhost:9527", "http://127.0.0.1:9527", "http://127.0.0.1:8082", "http://127.0.0.1:8083")
+                //是否允许证书 不再默认开启
+                .allowCredentials(true)
+                //设置允许的方法
+                .allowedMethods("*")
+                //跨域允许时间
+                .maxAge(3600);
+    }
+}
+```
+
+### 3. 定义新的 corsFilter Bean
+
+参考：https://www.jianshu.com/p/b02099a435bd
