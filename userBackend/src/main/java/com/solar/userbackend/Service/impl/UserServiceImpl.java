@@ -119,14 +119,19 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         Matcher matcher = Pattern.compile(validPattern).matcher(userAccount);
         Matcher emailMatcher = Pattern.compile(emailPattern).matcher(userAccount);
         // 如果不是有效的电子邮件地址并且包含特殊字符，则抛出异常
-        if (!emailMatcher.find() && matcher.find()) {
+        boolean isEmail = emailMatcher.find();
+        if (!isEmail && matcher.find()) {
             throw new BusinessException(ErrorCode.params_error, "账户不能包含特殊字符");
         }
         // 3.密码加密
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
         // 4.查询用户是否存在
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
-        queryWrapper.eq("userAccount", userAccount).or().eq("email", userAccount);
+        if (isEmail) {
+            queryWrapper.eq("email", userAccount);
+        } else {
+            queryWrapper.eq("userAccount", userAccount);
+        }
         queryWrapper.eq("userPassword", encryptPassword);
         User user = userMapper.selectOne(queryWrapper);
         if (user == null) {
