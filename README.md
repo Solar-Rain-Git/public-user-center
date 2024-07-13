@@ -96,11 +96,11 @@
 
 > 配置完下一步
 
-![image-20240613162652852](C:/Users/%E8%8C%95%E8%8C%95/AppData/Roaming/Typora/typora-user-images/image-20240613162652852.png)
+![image-20240613162652852](https://uploadtypora.oss-cn-hangzhou.aliyuncs.com/user-center/image-20240613162652852.png)
 
 #### 4.12 选择依赖
 
-![image-20240613163641125](C:/Users/%E8%8C%95%E8%8C%95/AppData/Roaming/Typora/typora-user-images/image-20240613163641125.png)
+![image-20240613163641125](https://uploadtypora.oss-cn-hangzhou.aliyuncs.com/user-center/image-20240613163641125.png)
 
 这些依赖项各有各的用途，在一个Spring Boot项目中，它们分别提供不同的功能和支持。以下是对每个依赖项的简要说明：
 
@@ -234,7 +234,7 @@ public class MyBatisConfig {
 
 这些依赖项组合在一起，可以帮助你快速构建一个功能强大的Spring Boot应用程序，涵盖从开发工具、Web开发、数据库操作到配置管理等各个方面。初始化的spring如下。
 
-![image-20240613165841510](C:/Users/%E8%8C%95%E8%8C%95/AppData/Roaming/Typora/typora-user-images/image-20240613165841510.png)
+![image-20240613165841510](https://uploadtypora.oss-cn-hangzhou.aliyuncs.com/user-center/image-20240613165841510.png)
 
 **一定要刷新maven**
 
@@ -328,11 +328,11 @@ MyBatisX 插件，自动根据数据库生成：
 
 从而提高开发效率！
 
-![image-20240615155229178](C:/Users/%E8%8C%95%E8%8C%95/AppData/Roaming/Typora/typora-user-images/image-20240615155229178.png)
+![image-20240615155229178](https://uploadtypora.oss-cn-hangzhou.aliyuncs.com/user-center/image-20240615155229178.png)
 
 编写一个单元测试来检验是否成功
 
-![image-20240615155542775](C:/Users/%E8%8C%95%E8%8C%95/AppData/Roaming/Typora/typora-user-images/image-20240615155542775.png)
+![image-20240615155542775](https://uploadtypora.oss-cn-hangzhou.aliyuncs.com/user-center/image-20240615155542775.png)
 
 ## 7. 后端 | 注册逻辑设计
 
@@ -949,15 +949,15 @@ java -jar ${name}.jar --spring.profiles.active=prod
 
 > 这里不做服务器宝塔安装的过程
 
-![image-20240708164738104](C:/Users/%E8%8C%95%E8%8C%95/AppData/Roaming/Typora/typora-user-images/image-20240708164738104.png)
+![image-20240708164738104](https://uploadtypora.oss-cn-hangzhou.aliyuncs.com/user-center/image-20240708164738104.png)
 
-![image-20240708164958343](C:/Users/%E8%8C%95%E8%8C%95/AppData/Roaming/Typora/typora-user-images/image-20240708164958343.png)
+![image-20240708164958343](https://uploadtypora.oss-cn-hangzhou.aliyuncs.com/user-center/image-20240708164958343.png)
 
-![image-20240708165334541](C:/Users/%E8%8C%95%E8%8C%95/AppData/Roaming/Typora/typora-user-images/image-20240708165334541.png)
+![image-20240708165334541](https://uploadtypora.oss-cn-hangzhou.aliyuncs.com/user-center/image-20240708165334541.png)
 
-![image-20240708165633045](C:/Users/%E8%8C%95%E8%8C%95/AppData/Roaming/Typora/typora-user-images/image-20240708165633045.png)
+![image-20240708165633045](https://uploadtypora.oss-cn-hangzhou.aliyuncs.com/user-center/image-20240708165633045.png)
 
-![image-20240708165735105](C:/Users/%E8%8C%95%E8%8C%95/AppData/Roaming/Typora/typora-user-images/image-20240708165735105.png)
+![image-20240708165735105](https://uploadtypora.oss-cn-hangzhou.aliyuncs.com/user-center/image-20240708165735105.png)
 
 ### 19.3 Docker部署
 
