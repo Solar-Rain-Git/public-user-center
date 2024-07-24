@@ -23,6 +23,13 @@ declare namespace API {
     description: string;
   }
 
+  type UserPageInfo = {
+    current: number;
+    pageSize: number;
+    total: number;
+    userList: CurrentUser[];
+  };
+
   type LoginResult = {
     status?: string;
     type?: string;

@@ -1,8 +1,10 @@
 package com.solar.userbackend.Service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.solar.userbackend.Common.ErrorCode;
+import com.solar.userbackend.Entity.Request.UserListRequest;
 import com.solar.userbackend.Entity.Request.UserLoginRequest;
 import com.solar.userbackend.Entity.Request.UserRegisterRequest;
 import com.solar.userbackend.Entity.User;
@@ -150,14 +152,16 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public List<User> searchUsers(User user) {
-        String username = user.getUsername();
-        String userAccount = user.getUserAccount();
-        Integer gender = user.getGender();
-        String phone = user.getPhone();
-        String email = user.getEmail();
-        Integer userStatus = user.getUserStatus();
-        Integer userRole = user.getUserRole();
+    public Page<User> searchUsers(UserListRequest userListRequest) {
+        String username = userListRequest.getUsername();
+        String userAccount = userListRequest.getUserAccount();
+        Integer gender = userListRequest.getGender();
+        String phone = userListRequest.getPhone();
+        String email = userListRequest.getEmail();
+        Integer userStatus = userListRequest.getUserStatus();
+        Integer userRole = userListRequest.getUserRole();
+        Integer current = userListRequest.getCurrent();
+        Integer pageSize=userListRequest.getPageSize();
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
         if (StringUtils.isNotBlank(username)) {
             queryWrapper.like("userName", username);
@@ -180,8 +184,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if (userRole != null) {
             queryWrapper.eq("userRole", userRole);
         }
-        List<User> userList = userMapper.selectList(queryWrapper);
-        return userList.stream().map(this::getSafetyUser).collect(Collectors.toList());
+        Page<User> page = new Page<>(current, pageSize);
+        return userMapper.selectPage(page, queryWrapper);
     }
 
     /**

@@ -1,6 +1,8 @@
 package com.solar.userbackend.Service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.solar.userbackend.Entity.Request.UserListRequest;
 import com.solar.userbackend.Entity.Request.UserRegisterRequest;
 import com.solar.userbackend.Entity.User;
 
@@ -39,10 +41,10 @@ public interface UserService extends IService<User> {
     /**
      * 用户动态查询
      *
-     * @param user
+     * @param userListRequest
      * @return
      */
-    List<User> searchUsers(User user);
+    Page<User> searchUsers(UserListRequest userListRequest);
 
     /**
      * @param request

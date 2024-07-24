@@ -1,10 +1,13 @@
 package com.solar.userbackend.Controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.solar.userbackend.Common.BaseResponse;
 import com.solar.userbackend.Common.ErrorCode;
 import com.solar.userbackend.Common.ResultUtils;
+import com.solar.userbackend.Common.UserPageResponse;
 import com.solar.userbackend.Entity.Email;
+import com.solar.userbackend.Entity.Request.UserListRequest;
 import com.solar.userbackend.Entity.Request.UserLoginRequest;
 import com.solar.userbackend.Entity.Request.UserRegisterRequest;
 import com.solar.userbackend.Entity.User;
@@ -16,9 +19,9 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 import static com.solar.userbackend.Constant.UserConstant.*;
 
@@ -129,12 +132,14 @@ public class UserController {
     }
 
     @PostMapping("/search")
-    public BaseResponse<List<User>> searchUsers(@RequestBody User user, HttpServletRequest request) {
+    public BaseResponse<UserPageResponse> searchUsers(@RequestBody UserListRequest userListRequest, HttpServletRequest request) {
         if (!isAdmin(request)) {
             throw new BusinessException(ErrorCode.no_auth, "没有权限");
         }
-        List<User> userList = userService.searchUsers(user);
-        return ResultUtils.success(userList);
+        Page<User> userPage = userService.searchUsers(userListRequest);
+        List<User> userList = userPage.getRecords().stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
+        UserPageResponse response = new UserPageResponse(userPage.getCurrent(), userPage.getSize(), userPage.getTotal(), userList);
+        return ResultUtils.success(response);
     }
 
     @PostMapping("/delete")

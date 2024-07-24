@@ -43,8 +43,8 @@ export async function register(body: API.RegisterParams, options?: { [p: string]
 }
 
 /** 查询用户信息接口 POST /user/search */
-export async function searchUsers(body: API.CurrentUser, options?: { [p: string]: any }) {
-  return request<API.BaseResponse<API.CurrentUser>>('/api/user/search', {
+export async function searchUsers(body: API.UserPageInfo, options?: { [p: string]: any }) {
+  return request<API.BaseResponse<API.UserPageInfo>>('/api/user/search', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',

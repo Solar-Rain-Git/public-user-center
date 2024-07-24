@@ -25,6 +25,8 @@ const deleteUserById = async (userId: string) => {
 export default () => {
   const actionRef = useRef<ActionType>();
   const [open, setOpen] = useState(false);
+  let [userList, setUserList] = useState<any>([]);
+  let [pagination, setPagination] = useState({total: 0, current: 1})
   let [userValue, setUserValue] = useState<Object>({});
   const columns: ProColumns<API.CurrentUser>[] = [
     {
@@ -230,11 +232,11 @@ export default () => {
           actionRef={actionRef}
           cardBordered
           scroll={{ x: 2000 }}
-          // @ts-ignore
           request={async (params, sort, filter) => {
             await waitTime(500);
-            const userList = await searchUsers(params as API.CurrentUser);
-            return { data: userList };
+            userList = await searchUsers(params as API.UserPageInfo);
+            setPagination(prev => ({ ...prev, total: userList.total }));
+            return { data: userList.userList };
           }}
           editable={{
             type: 'multiple',
@@ -271,8 +273,12 @@ export default () => {
             },
           }}
           pagination={{
+            current:pagination.current,
             pageSize: 5,
-            onChange: (page) => console.log(page),
+            total:pagination.total,
+            onChange: (page) => {
+              setPagination(prev => ({ ...prev, current: page }));
+            },
           }}
           dateFormatter="string"
           headerTitle="管理"
